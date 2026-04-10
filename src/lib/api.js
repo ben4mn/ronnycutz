@@ -17,43 +17,50 @@ export async function createBooking(payload) {
   return data;
 }
 
+function adminHeaders(token) {
+  return { 'Content-Type': 'application/json', 'x-admin-token': token };
+}
+
 export async function adminFetchConfig(token) {
-  const r = await fetch(`${BASE}/admin/config?token=${encodeURIComponent(token)}`);
-  if (!r.ok) throw new Error('Unauthorized');
+  const r = await fetch(`${BASE}/admin/config`, { headers: adminHeaders(token) });
+  if (r.status === 401) throw new Error('Unauthorized');
+  if (!r.ok) throw new Error('Request failed');
   return r.json();
 }
 
 export async function adminFetchBookings(token) {
-  const r = await fetch(`${BASE}/admin/bookings?token=${encodeURIComponent(token)}`);
+  const r = await fetch(`${BASE}/admin/bookings`, { headers: adminHeaders(token) });
   if (!r.ok) throw new Error('Unauthorized');
   return r.json();
 }
 
 export async function adminCancelBooking(id, token) {
-  const r = await fetch(`${BASE}/admin/bookings/${id}/cancel?token=${encodeURIComponent(token)}`, {
+  const r = await fetch(`${BASE}/admin/bookings/${id}/cancel`, {
     method: 'POST',
+    headers: adminHeaders(token),
   });
   return r.json();
 }
 
 export async function adminFetchBlocks(token) {
-  const r = await fetch(`${BASE}/admin/blocks?token=${encodeURIComponent(token)}`);
+  const r = await fetch(`${BASE}/admin/blocks`, { headers: adminHeaders(token) });
   if (!r.ok) throw new Error('Unauthorized');
   return r.json();
 }
 
 export async function adminCreateBlock(payload, token) {
-  const r = await fetch(`${BASE}/admin/blocks?token=${encodeURIComponent(token)}`, {
+  const r = await fetch(`${BASE}/admin/blocks`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: adminHeaders(token),
     body: JSON.stringify(payload),
   });
   return r.json();
 }
 
 export async function adminDeleteBlock(id, token) {
-  const r = await fetch(`${BASE}/admin/blocks/${id}?token=${encodeURIComponent(token)}`, {
+  const r = await fetch(`${BASE}/admin/blocks/${id}`, {
     method: 'DELETE',
+    headers: adminHeaders(token),
   });
   return r.json();
 }

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import {
   adminFetchConfig,
   adminFetchBookings,
@@ -9,9 +8,112 @@ import {
   adminDeleteBlock,
 } from '../lib/api.js';
 
+const STORAGE_KEY = 'ronnycutz_admin_token';
+
 export default function AdminPage() {
-  const [params] = useSearchParams();
-  const token = params.get('token') || '';
+  const [token, setToken] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
+  const [authed, setAuthed] = useState(false);
+  const [authChecking, setAuthChecking] = useState(Boolean(token));
+  const [authError, setAuthError] = useState(null);
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginSubmitting, setLoginSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!token) {
+      setAuthChecking(false);
+      return;
+    }
+    let cancelled = false;
+    adminFetchConfig(token)
+      .then(() => !cancelled && setAuthed(true))
+      .catch(() => {
+        if (cancelled) return;
+        localStorage.removeItem(STORAGE_KEY);
+        setToken('');
+        setAuthError('Session expired. Please sign in again.');
+      })
+      .finally(() => !cancelled && setAuthChecking(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    if (!loginPassword.trim()) return;
+    setLoginSubmitting(true);
+    setAuthError(null);
+    try {
+      await adminFetchConfig(loginPassword.trim());
+      localStorage.setItem(STORAGE_KEY, loginPassword.trim());
+      setToken(loginPassword.trim());
+      setAuthed(true);
+      setLoginPassword('');
+    } catch {
+      setAuthError('Incorrect password.');
+    } finally {
+      setLoginSubmitting(false);
+    }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem(STORAGE_KEY);
+    setToken('');
+    setAuthed(false);
+  }
+
+  if (authChecking) {
+    return (
+      <Wrapper>
+        <p className="text-text-subtle">Checking session…</p>
+      </Wrapper>
+    );
+  }
+
+  if (!authed) {
+    return (
+      <Wrapper>
+        <div className="max-w-sm mx-auto mt-20">
+          <h1 className="font-display text-4xl text-brass text-center mb-2">RonnyCutz</h1>
+          <p className="text-text-subtle text-center text-xs uppercase tracking-[0.3em] mb-10">
+            Admin Access
+          </p>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input
+              type="password"
+              required
+              autoFocus
+              placeholder="Password"
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              className="w-full bg-charcoal-2 border border-charcoal-3 text-cream px-4 py-4 text-lg focus:border-brass focus:outline-none placeholder:text-text-subtle"
+            />
+            {authError && (
+              <p className="text-red-400 text-sm text-center">{authError}</p>
+            )}
+            <button
+              type="submit"
+              disabled={loginSubmitting}
+              className="w-full py-4 bg-brass text-charcoal font-semibold text-lg hover:bg-brass-2 transition disabled:opacity-40"
+            >
+              {loginSubmitting ? 'Signing in…' : 'Sign In'}
+            </button>
+          </form>
+        </div>
+      </Wrapper>
+    );
+  }
+
+  return <AdminDashboard token={token} onLogout={handleLogout} />;
+}
+
+function AdminDashboard({ token, onLogout }) {
   const [bookings, setBookings] = useState([]);
   const [blocks, setBlocks] = useState([]);
   const [config, setConfig] = useState(null);
@@ -38,22 +140,17 @@ export default function AdminPage() {
     }
   }
 
+  useEffect(() => {
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function copyWebcal() {
     if (!config?.calendar_feed_url_webcal) return;
     navigator.clipboard.writeText(config.calendar_feed_url_webcal);
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
   }
-
-  useEffect(() => {
-    if (!token) {
-      setError('Missing ?token=');
-      setLoading(false);
-      return;
-    }
-    reload();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
 
   async function handleCancel(id) {
     if (!confirm('Cancel this booking?')) return;
@@ -86,8 +183,18 @@ export default function AdminPage() {
 
   return (
     <Wrapper>
-      <h1 className="font-display text-4xl text-brass mb-2">Admin</h1>
-      <p className="text-text-subtle text-sm mb-10">Manage upcoming bookings and block off time.</p>
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <h1 className="font-display text-4xl text-brass mb-2">Admin</h1>
+          <p className="text-text-subtle text-sm">Manage upcoming bookings and block off time.</p>
+        </div>
+        <button
+          onClick={onLogout}
+          className="text-text-subtle hover:text-brass text-xs uppercase tracking-widest border border-charcoal-3 hover:border-brass px-3 py-2 transition"
+        >
+          Sign out
+        </button>
+      </div>
 
       <section className="mb-14">
         <h2 className="font-display text-2xl text-cream mb-4">Apple Calendar Subscription</h2>
