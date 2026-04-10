@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "Regular Haircut",
+    "name": "Haircut",
     "description": "Clean cut, shaped and styled to your preference.",
     "duration_minutes": 60,
     "price": 30
