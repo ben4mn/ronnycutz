@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "Regular Haircut",
+    "description": "Clean cut, shaped and styled to your preference.",
+    "duration_minutes": 60,
+    "price": 30
+  },
+  {
+    "id": 2,
+    "name": "Haircut & Beard",
+    "description": "Full haircut plus beard trim and shape.",
+    "duration_minutes": 75,
+    "price": 35
+  },
+  {
+    "id": 3,
+    "name": "College Student Haircut",
+    "description": "Valid student ID required at time of appointment.",
+    "duration_minutes": 60,
+    "price": 25
+  },
+  {
+    "id": 4,
+    "name": "College Student Haircut & Beard",
+    "description": "Valid student ID required at time of appointment.",
+    "duration_minutes": 75,
+    "price": 30
+  }
+]
