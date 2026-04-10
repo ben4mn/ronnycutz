@@ -1,14 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-charcoal: #0a0a0a;
-  --color-charcoal-2: #141414;
-  --color-charcoal-3: #1c1c1c;
-  --color-cream: #f5f0e6;
-  --color-cream-2: #e8e0d0;
-  --color-brass: #c9a449;
-  --color-brass-2: #b8932f;
-  --color-text-subtle: #8a8278;
+  --color-charcoal: #0a0a0f;
+  --color-charcoal-2: #12121a;
+  --color-charcoal-3: #1a1a26;
+  --color-cream: #f0f0f5;
+  --color-cream-2: #d8d8e8;
+  --color-brass: #E03A2F;
+  --color-brass-2: #c42e24;
+  --color-blue: #4A7FD4;
+  --color-blue-2: #3568bb;
+  --color-text-subtle: #8a8aaa;
   --font-display: "Playfair Display", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
 }
@@ -29,19 +31,22 @@ body {
 
 ::selection {
   background: var(--color-brass);
-  color: var(--color-charcoal);
+  color: #fff;
 }
 
-.font-display { font-family: var(--font-display); }
+.font-display {
+  font-family: var(--font-display);
+}
 
 .hero-grain {
-  background-image: radial-gradient(circle at 20% 10%, rgba(201,164,73,0.12), transparent 50%),
-                    radial-gradient(circle at 80% 60%, rgba(201,164,73,0.08), transparent 50%);
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(224,58,47,0.15), transparent 50%),
+    radial-gradient(circle at 80% 60%, rgba(74,127,212,0.12), transparent 50%);
 }
 
 .brass-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(201,164,73,0.6), transparent);
+  background: linear-gradient(90deg, transparent, rgba(224,58,47,0.6), rgba(74,127,212,0.6), transparent);
 }
 
 input, textarea, select, button {
