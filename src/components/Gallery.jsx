@@ -1,34 +1,36 @@
-import { motion } from 'framer-motion';
-import gallery from '../data/gallery.json';
+import { useEffect } from 'react';
 import shop from '../data/shop.json';
 import { SectionHeader } from './Services.jsx';
 
 export default function Gallery() {
+  useEffect(() => {
+    // Load Instagram embed script
+    if (window.instgrm) {
+      window.instgrm.Embeds.process();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://www.instagram.com/embed.js';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
   return (
     <section id="gallery" className="py-24 px-6 bg-charcoal-2">
       <div className="max-w-6xl mx-auto">
         <SectionHeader eyebrow="The Work" title="Recent Cuts" />
+        <p className="text-center text-cream/60 mt-4 mb-12 text-sm tracking-wide">
+          Follow <a href={shop.instagram_url} target="_blank" rel="noopener noreferrer" className="text-brass hover:text-cream transition-colors">@{shop.instagram}</a> for the latest cuts
+        </p>
 
-        <div className="mt-14 grid grid-cols-2 md:grid-cols-3 gap-3">
-          {gallery.map((img, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.5, delay: (i % 3) * 0.08 }}
-              className={`relative overflow-hidden ${
-                i % 5 === 0 ? 'row-span-2 aspect-[3/4] md:aspect-[3/5]' : 'aspect-square'
-              }`}
-            >
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading="lazy"
-                className="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 hover:scale-105 transition-all duration-500"
-              />
-            </motion.div>
-          ))}
+        {/* Instagram embed grid */}
+        <div className="flex flex-col items-center gap-6">
+          <blockquote
+            className="instagram-media w-full max-w-xl"
+            data-instgrm-permalink="https://www.instagram.com/ronnycutz_/"
+            data-instgrm-version="14"
+            style={{ background: '#1a1a26', border: '1px solid rgba(74,127,212,0.2)', borderRadius: '8px', margin: '0 auto' }}
+          />
         </div>
 
         <div className="text-center mt-12">
@@ -36,9 +38,9 @@ export default function Gallery() {
             href={shop.instagram_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-brass hover:text-cream transition-colors text-sm uppercase tracking-[0.2em]"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-brand-blue hover:bg-brand-blue-dark text-white font-semibold rounded-sm transition-colors"
           >
-            More on Instagram <span>→</span>
+            View Full Instagram →
           </a>
         </div>
       </div>
