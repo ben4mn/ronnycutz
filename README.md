@@ -1,4 +1,4 @@
-# RonnyCutz — ronnycutz.4mn.org
+# RonnyCutz — ronnycutz.com
 
 Single-page barber site with booking, Apple Calendar sync, and a token-protected admin page.
 
@@ -68,7 +68,7 @@ nano .env
 #   NOTIFY_EMAIL=aaron's email
 #   CALENDAR_FEED_TOKEN=$(openssl rand -hex 32)
 #   ADMIN_TOKEN=$(openssl rand -hex 32)
-#   PUBLIC_BASE_URL=https://ronnycutz.4mn.org
+#   PUBLIC_BASE_URL=https://ronnycutz.com
 ```
 
 ### 4. Launch
@@ -79,30 +79,32 @@ docker compose logs -f ronnycutz
 curl http://localhost:8084/api/health
 ```
 
-### 5. Nginx Proxy Manager
+### 5. Cloudflare Tunnel ingress rule
 
-Open `http://10.0.0.136:81` (or the LAN IP of your NPM).
+The server already runs a shared cloudflared tunnel (`ebb2e075-...`) that routes multiple domains via `/etc/cloudflared/config.yml`. Add an entry under `ingress:` before the final `http_status:404` catch-all:
 
-**Add a new Proxy Host:**
-- Domain Names: `ronnycutz.4mn.org`
-- Scheme: `http`
-- Forward Hostname / IP: `localhost` (or `10.0.0.136`)
-- Forward Port: `8084`
-- Enable: *Cache Assets*, *Block Common Exploits*, *Websockets Support*
+```yaml
+  - hostname: ronnycutz.com
+    service: http://localhost:8084
+  - hostname: www.ronnycutz.com
+    service: http://localhost:8084
+```
 
-**SSL tab:**
-- Request Let's Encrypt cert
-- Enable *Force SSL* and *HTTP/2*
-- Agree to ToS
+Then reload:
 
-Save. Within ~60s `https://ronnycutz.4mn.org` should resolve.
+```bash
+sudo systemctl restart cloudflared
+sudo systemctl is-active cloudflared
+```
+
+DNS: add a CNAME `ronnycutz.com` (and `www`) pointing to `ebb2e075-6206-4565-9a69-2c60c468698c.cfargotunnel.com`, proxied. Within ~30s `https://ronnycutz.com` resolves with a valid Cloudflare cert.
 
 ## Apple Calendar subscription (for Aaron)
 
 Once deployed, build his subscribe URL using `CALENDAR_FEED_TOKEN` from `.env`:
 
 ```
-webcal://ronnycutz.4mn.org/api/calendar.ics?token=YOUR_TOKEN
+webcal://ronnycutz.com/api/calendar.ics?token=YOUR_TOKEN
 ```
 
 **On Mac:** open the webcal URL in Safari → it launches Calendar.app → set refresh to 5 minutes.
@@ -115,7 +117,7 @@ New bookings appear automatically. Cancelled bookings disappear on next refresh.
 Hidden URL:
 
 ```
-https://ronnycutz.4mn.org/admin?token=YOUR_ADMIN_TOKEN
+https://ronnycutz.com/admin?token=YOUR_ADMIN_TOKEN
 ```
 
 Shows upcoming bookings (cancel any) and block-time-off form.
@@ -141,6 +143,6 @@ Shows upcoming bookings (cancel any) and block-time-off form.
 - [ ] SQLite row created: `sqlite3 data/ronnycutz.db "SELECT * FROM bookings;"`
 - [ ] Confirmation email received with `.ics` attachment
 - [ ] `curl "http://localhost:8084/api/calendar.ics?token=XXX"` returns a valid ICS body
-- [ ] After NPM proxy setup: `curl -I https://ronnycutz.4mn.org` → 200
+- [ ] After tunnel ingress rule added: `curl -I https://ronnycutz.com` → 200
 - [ ] Mobile Safari: sticky bottom bar works, date picker scrolls smoothly
 - [ ] Concurrent booking test: two tabs try to book the same slot, second one rejects with 409

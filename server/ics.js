@@ -40,7 +40,7 @@ function foldLine(line) {
 function bookingToVEvent(booking, baseUrl) {
   const start = new Date(booking.start_iso);
   const end = new Date(start.getTime() + booking.duration_min * 60 * 1000);
-  const uid = `booking-${booking.id}@ronnycutz.4mn.org`;
+  const uid = `booking-${booking.id}@ronnycutz.com`;
   const summary = `${booking.service_name} — ${booking.client_name}`;
   const description = [
     `Service: ${booking.service_name}`,
