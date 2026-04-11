@@ -65,27 +65,24 @@ export default function Hours() {
             <span style={{ fontWeight: 700, fontSize: '13px', color: '#aaa' }}>Closed</span>
           </motion.div>
         </div>
-        <a
-          href={shop.map_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: '#fff',
-            border: '2.5px solid #111',
-            borderRadius: '9999px',
-            padding: '10px 20px',
-            boxShadow: '3px 3px 0 #111',
-            fontSize: '14px',
-            fontWeight: 700,
-            color: '#111',
-            textDecoration: 'none',
-          }}
-        >
-          📍 {shop.address}
-        </a>
+
+        {/* Address and phone */}
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <a
+            href={shop.map_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fff', border: '2.5px solid #111', borderRadius: '9999px', padding: '10px 20px', boxShadow: '3px 3px 0 #111', fontSize: '14px', fontWeight: 700, color: '#111', textDecoration: 'none' }}
+          >
+            📍 {shop.address}
+          </a>
+          <a
+            href={'tel:' + shop.phone.replace(/\D/g, '')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#E03A2F', border: '2.5px solid #111', borderRadius: '9999px', padding: '10px 20px', boxShadow: '3px 3px 0 #111', fontSize: '14px', fontWeight: 700, color: '#fff', textDecoration: 'none' }}
+          >
+            📞 {shop.phone}
+          </a>
+        </div>
       </div>
     </section>
   );
