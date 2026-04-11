@@ -11,7 +11,17 @@ const DAY_LABELS = {
 function fmt(t) {
   const [h, m] = t.split(':').map(Number);
   const ampm = h >= 12 ? 'PM' : 'AM';
-  return `${h > 12 ? h - 12 : h}:${String(m).padStart(2, '0')} ${ampm}`;
+  const hour = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  return `${hour}:${String(m).padStart(2, '0')} ${ampm}`;
+}
+
+function lastSlot(closeStr) {
+  // Last slot = close time minus 60 min (slot duration)
+  const [h, m] = closeStr.split(':').map(Number);
+  const totalMin = h * 60 + m - 60;
+  const lh = String(Math.floor(totalMin / 60)).padStart(2, '0');
+  const lm = String(totalMin % 60).padStart(2, '0');
+  return fmt(`${lh}:${lm}`);
 }
 
 export default function Hours() {
@@ -35,7 +45,7 @@ export default function Hours() {
             >
               <span style={{ fontWeight: 800, fontSize: '14px', color: '#111' }}>{DAY_LABELS[day]}</span>
               <span style={{ fontWeight: 700, fontSize: '13px', color: slots.length ? '#4A7FD4' : '#aaa' }}>
-                {slots.length ? `${fmt(slots[0][0])} – ${fmt(slots[0][1])}` : 'Closed'}
+                {slots.length ? `${fmt(slots[0][0])} – ${lastSlot(slots[0][1])}` : 'Closed'}
               </span>
             </motion.div>
           ))}
