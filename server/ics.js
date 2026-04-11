@@ -40,28 +40,33 @@ function foldLine(line) {
 function bookingToVEvent(booking, baseUrl) {
   const start = new Date(booking.start_iso);
   const end = new Date(start.getTime() + booking.duration_min * 60 * 1000);
-  const uid = `booking-${booking.id}@ronnycutz.com`;
-  const summary = `${booking.service_name} — ${booking.client_name}`;
+  const uid = 'booking-' + booking.id + '@ronnycutz.com';
+
+  // Format: "Haircut: John Smith" so it shows clearly in Apple Calendar
+  const summary = booking.service_name + ': ' + booking.client_name;
+
   const description = [
-    `Service: ${booking.service_name}`,
-    `Client: ${booking.client_name}`,
-    `Phone: ${booking.client_phone}`,
-    `Email: ${booking.client_email}`,
-    booking.notes ? `Notes: ${booking.notes}` : null,
-    `Cancel: ${baseUrl}/api/bookings/${booking.id}/cancel?token=${booking.cancel_token}`,
+    'Client: ' + booking.client_name,
+    'Phone: ' + booking.client_phone,
+    'Email: ' + booking.client_email,
+    'Service: ' + booking.service_name,
+    'Price: $' + booking.service_price,
+    booking.notes ? 'Notes: ' + booking.notes : null,
+    'Cancel: ' + baseUrl + '/api/bookings/' + booking.id + '/cancel?token=' + booking.cancel_token,
   ]
     .filter(Boolean)
     .join('\n');
 
   const lines = [
     'BEGIN:VEVENT',
-    `UID:${uid}`,
-    `DTSTAMP:${formatICSDate(new Date().toISOString())}`,
-    `DTSTART:${formatICSDate(start.toISOString())}`,
-    `DTEND:${formatICSDate(end.toISOString())}`,
-    `SUMMARY:${escapeText(summary)}`,
-    `DESCRIPTION:${escapeText(description)}`,
-    `STATUS:${booking.status === 'confirmed' ? 'CONFIRMED' : 'CANCELLED'}`,
+    'UID:' + uid,
+    'DTSTAMP:' + formatICSDate(new Date().toISOString()),
+    'DTSTART:' + formatICSDate(start.toISOString()),
+    'DTEND:' + formatICSDate(end.toISOString()),
+    'SUMMARY:' + escapeText(summary),
+    'DESCRIPTION:' + escapeText(description),
+    'LOCATION:6522 84th Street\\, Lubbock\\, TX',
+    'STATUS:' + (booking.status === 'confirmed' ? 'CONFIRMED' : 'CANCELLED'),
     'END:VEVENT',
   ];
   return lines.map(foldLine).join(CRLF);
@@ -70,9 +75,7 @@ function bookingToVEvent(booking, baseUrl) {
 export function buildFeed(baseUrl) {
   const bookings = db
     .prepare(
-      `SELECT * FROM bookings WHERE status = 'confirmed'
-       AND start_iso >= datetime('now', '-1 day')
-       ORDER BY start_iso ASC`
+      "SELECT * FROM bookings WHERE status = 'confirmed' AND start_iso >= datetime('now', '-1 day') ORDER BY start_iso ASC"
     )
     .all();
 
@@ -83,14 +86,13 @@ export function buildFeed(baseUrl) {
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'X-WR-CALNAME:RonnyCutz Bookings',
-    'X-WR-TIMEZONE:America/New_York',
+    'X-WR-TIMEZONE:America/Chicago',
     'REFRESH-INTERVAL;VALUE=DURATION:PT5M',
     'X-PUBLISHED-TTL:PT5M',
   ];
 
   const events = bookings.map((b) => bookingToVEvent(b, baseUrl));
   const footer = ['END:VCALENDAR'];
-
   return [...header, ...events, ...footer].join(CRLF) + CRLF;
 }
 
