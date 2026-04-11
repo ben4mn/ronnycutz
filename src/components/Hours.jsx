@@ -4,8 +4,8 @@ import hours from '../data/hours.json';
 import { SectionHeader } from './Services.jsx';
 
 const DAY_LABELS = {
-  monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday',
-  thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday'
+  mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday',
+  thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday'
 };
 
 function fmt(t) {
@@ -19,9 +19,9 @@ export default function Hours() {
   return (
     <section id="hours" style={{ padding: '44px 28px', background: '#F5F8FF', borderBottom: '3px solid #111' }}>
       <div style={{ maxWidth: '860px', margin: '0 auto' }}>
-        <SectionHeader eyebrow="Location & Hours" title="When We're Open" blue />
+        <SectionHeader eyebrow="Location & Hours" title="Service Hours" blue />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', maxWidth: '500px', marginBottom: '24px' }}>
-          {days.filter(([d]) => !['saturday','sunday'].includes(d)).map(([day, info], i) => (
+          {days.filter(([d]) => !['sat','sun'].includes(d)).map(([day, slots], i) => (
             <motion.div
               key={day}
               initial={{ opacity: 0, y: 16 }}
@@ -29,7 +29,7 @@ export default function Hours() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.05 }}
               style={{
-                background: info.closed ? '#f5f5f5' : '#fff',
+                background: slots.length ? '#fff' : '#f5f5f5',
                 border: '2.5px solid #111',
                 borderRadius: '12px',
                 padding: '16px 20px',
@@ -40,8 +40,8 @@ export default function Hours() {
               }}
             >
               <span style={{ fontWeight: 800, fontSize: '14px', color: '#111' }}>{DAY_LABELS[day]}</span>
-              <span style={{ fontWeight: 700, fontSize: '13px', color: info.closed ? '#aaa' : '#4A7FD4' }}>
-                {info.closed ? 'Closed' : `${fmt(info.open)}+`}
+              <span style={{ fontWeight: 700, fontSize: '13px', color: slots.length ? '#4A7FD4' : '#aaa' }}>
+                {slots.length ? `${fmt(slots[0][0])}+` : 'Closed'}
               </span>
             </motion.div>
           ))}
