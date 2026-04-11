@@ -3,32 +3,32 @@
     "id": 1,
     "name": "Haircut",
     "description": "",
-    "duration_min": 60,
-    "duration_minutes": 60,
+    "duration_min": 50,
+    "duration_minutes": 50,
     "price": 30
   },
   {
     "id": 2,
     "name": "Haircut & Beard",
     "description": "",
-    "duration_min": 75,
-    "duration_minutes": 75,
+    "duration_min": 60,
+    "duration_minutes": 60,
     "price": 35
   },
   {
     "id": 3,
     "name": "College Student Haircut",
     "description": "Valid student ID required at time of appointment.",
-    "duration_min": 60,
-    "duration_minutes": 60,
+    "duration_min": 50,
+    "duration_minutes": 50,
     "price": 25
   },
   {
     "id": 4,
     "name": "College Student Haircut & Beard",
     "description": "Valid student ID required at time of appointment.",
-    "duration_min": 75,
-    "duration_minutes": 75,
+    "duration_min": 60,
+    "duration_minutes": 60,
     "price": 30
   }
 ]
