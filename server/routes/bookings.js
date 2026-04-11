@@ -10,32 +10,45 @@ import { getAvailability } from '../availability.js';
 const router = express.Router();
 
 function getBaseUrl(req) {
-  return process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  return process.env.PUBLIC_BASE_URL || (req.protocol + '://' + req.get('host'));
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 router.post('/', async (req, res) => {
   const { service_id, start_iso, client_name, client_phone, client_email, notes } = req.body || {};
+
   if (!service_id || !start_iso || !client_name || !client_phone || !client_email) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ error: 'All fields including email are required' });
   }
-  const service = services.find((s) => s.id === service_id);
+
+  if (!isValidEmail(client_email)) {
+    return res.status(400).json({ error: 'A valid email address is required' });
+  }
+
+  const sid = parseInt(service_id, 10);
+  const service = services.find((s) => s.id === sid);
   if (!service) return res.status(400).json({ error: 'Unknown service' });
+
   const start = new Date(start_iso);
   if (Number.isNaN(start.getTime())) return res.status(400).json({ error: 'Invalid start_iso' });
   if (start.getTime() < Date.now() + 30 * 60 * 1000) {
     return res.status(400).json({ error: 'Slot is in the past or too soon' });
   }
+
   const normalizedIso = start.toISOString();
-  const dateYMD = normalizedIso.slice(0, 10);
+  const dateYMD = new Date(normalizedIso).toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
   const openSlots = getAvailability(dateYMD, service.duration_min, hours);
   if (!openSlots.includes(normalizedIso)) {
     return res.status(409).json({ error: 'Slot no longer available' });
   }
+
   const cancel_token = crypto.randomBytes(16).toString('hex');
   try {
     const insert = db.prepare(
-      `INSERT INTO bookings (service_id, service_name, service_price, start_iso, duration_min, client_name, client_phone, client_email, notes, status, cancel_token)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`
+      "INSERT INTO bookings (service_id, service_name, service_price, start_iso, duration_min, client_name, client_phone, client_email, notes, status, cancel_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)"
     );
     const result = insert.run(
       service.id, service.name, service.price, normalizedIso, service.duration_min,
@@ -43,17 +56,15 @@ router.post('/', async (req, res) => {
       notes?.trim() || null, cancel_token
     );
     const booking = db.prepare('SELECT * FROM bookings WHERE id = ?').get(result.lastInsertRowid);
-    sendBookingEmails(booking, getBaseUrl(req)).catch((e) =>
-      console.error('[bookings] email failed:', e.message)
-    );
+    sendBookingEmails(booking, getBaseUrl(req)).catch((e) => console.error('[bookings] email failed:', e.message));
     res.status(201).json({
       id: booking.id,
       service_name: booking.service_name,
       start_iso: booking.start_iso,
       duration_min: booking.duration_min,
       status: 'pending',
-      ics_url: `/api/bookings/${booking.id}.ics`,
-      cancel_url: `/api/bookings/${booking.id}/cancel?token=${cancel_token}`,
+      ics_url: '/api/bookings/' + booking.id + '.ics',
+      cancel_url: '/api/bookings/' + booking.id + '/cancel?token=' + cancel_token,
     });
   } catch (err) {
     if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -69,7 +80,7 @@ router.get('/:id.ics', (req, res) => {
   if (!booking) return res.status(404).send('Not found');
   const ics = buildSingleEvent(booking, getBaseUrl(req));
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-  res.setHeader('Content-Disposition', `attachment; filename="ronnycutz-${booking.id}.ics"`);
+  res.setHeader('Content-Disposition', 'attachment; filename="ronnycutz-' + booking.id + '.ics"');
   res.send(ics);
 });
 
@@ -87,10 +98,7 @@ router.get('/:id/cancel', (req, res) => {
 });
 
 function renderPage(title, message) {
-  return `<!doctype html><html><head><meta charset="utf-8"><title>RonnyCutz</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>body{background:#FFF9F0;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px}.box{max-width:420px;text-align:center;background:#fff;padding:40px;border:3px solid #111;border-radius:12px;box-shadow:5px 5px 0 #111}h1{color:#E03A2F;margin-top:0}a{color:#4A7FD4}</style>
-  </head><body><div class="box"><h1>RonnyCutz</h1><p>${message}</p><p><a href="/">Back to site →</a></p></div></body></html>`;
+  return '<!doctype html><html><head><meta charset="utf-8"><title>RonnyCutz</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#FFF9F0;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px}.box{max-width:420px;text-align:center;background:#fff;padding:40px;border:3px solid #111;border-radius:12px;box-shadow:5px 5px 0 #111}h1{color:#E03A2F;margin-top:0}a{color:#4A7FD4}</style></head><body><div class="box"><h1>RonnyCutz</h1><p>' + message + '</p><p><a href="/">Back to site</a></p></div></body></html>';
 }
 
 export default router;
