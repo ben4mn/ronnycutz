@@ -25,17 +25,15 @@ function formatWhen(iso) {
 }
 
 function baseStyle() {
-  return `font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#FFF9F0;padding:32px;border-radius:12px;border:3px solid #111`;
+  return 'font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#FFF9F0;padding:32px;border-radius:12px;border:3px solid #111';
 }
 
 export async function sendBookingEmails(booking, baseUrl) {
   const t = getTransporter();
   if (!t) return;
-
   const when = formatWhen(booking.start_iso);
   const adminUrl = baseUrl + '/admin';
 
-  // Email to client — let them know it's pending
   const clientHtml = `
     <div style="${baseStyle()}">
       <h1 style="color:#4A7FD4;margin:0 0 16px;font-size:28px;font-weight:900;">RonnyCutz ✂</h1>
@@ -48,7 +46,6 @@ export async function sendBookingEmails(booking, baseUrl) {
       <p style="color:#666;font-size:14px;">You'll get another email once it's confirmed. — RonnyCutz</p>
     </div>`;
 
-  // Email to owner — with Approve / Deny buttons
   const ownerHtml = `
     <div style="${baseStyle()}">
       <h1 style="color:#E03A2F;margin:0 0 8px;font-size:28px;font-weight:900;">New Booking Request</h1>
@@ -57,32 +54,19 @@ export async function sendBookingEmails(booking, baseUrl) {
         <p style="margin:8px 0 4px 0;"><strong>Name:</strong> ${booking.client_name}</p>
         <p style="margin:4px 0;"><strong>Phone:</strong> ${booking.client_phone}</p>
         <p style="margin:4px 0;"><strong>Email:</strong> ${booking.client_email}</p>
-        ${booking.notes ? `<p style="margin:4px 0;"><strong>Notes:</strong> ${booking.notes}</p>` : ''}
+        ${booking.notes ? '<p style="margin:4px 0;"><strong>Notes:</strong> ' + booking.notes + '</p>' : ''}
       </div>
-      <p style="font-size:14px;color:#666;margin-bottom:16px;">Go to your admin page to approve or deny:</p>
-      <a href="${adminUrl}" style="display:inline-block;background:#4A7FD4;color:#fff;padding:12px 28px;border-radius:50px;font-weight:800;font-size:15px;text-decoration:none;border:2.5px solid #111;box-shadow:3px 3px 0 #111;margin-right:10px;">
+      <a href="${adminUrl}" style="display:inline-block;background:#4A7FD4;color:#fff;padding:12px 28px;border-radius:50px;font-weight:800;font-size:15px;text-decoration:none;border:2.5px solid #111;box-shadow:3px 3px 0 #111;">
         Open Admin Page →
       </a>
     </div>`;
 
   try {
-    await t.sendMail({
-      from: process.env.GMAIL_USER,
-      to: booking.client_email,
-      subject: `RonnyCutz — Booking Request Received`,
-      html: clientHtml,
-    });
+    await t.sendMail({ from: process.env.GMAIL_USER, to: booking.client_email, subject: 'RonnyCutz — Booking Request Received', html: clientHtml });
     if (process.env.NOTIFY_EMAIL) {
-      await t.sendMail({
-        from: process.env.GMAIL_USER,
-        to: process.env.NOTIFY_EMAIL,
-        subject: `[RonnyCutz] New booking request — ${booking.client_name} @ ${when}`,
-        html: ownerHtml,
-      });
+      await t.sendMail({ from: process.env.GMAIL_USER, to: process.env.NOTIFY_EMAIL, subject: '[RonnyCutz] New booking — ' + booking.client_name + ' @ ' + when, html: ownerHtml });
     }
-  } catch (err) {
-    console.error('[email] send failed:', err.message);
-  }
+  } catch (err) { console.error('[email] send failed:', err.message); }
 }
 
 export async function sendApprovalEmail(booking, baseUrl) {
@@ -90,7 +74,7 @@ export async function sendApprovalEmail(booking, baseUrl) {
   if (!t) return;
   const when = formatWhen(booking.start_iso);
   const ics = buildSingleEvent(booking, baseUrl);
-  const cancelUrl = `${baseUrl}/api/bookings/${booking.id}/cancel?token=${booking.cancel_token}`;
+  const cancelUrl = baseUrl + '/api/bookings/' + booking.id + '/cancel?token=' + booking.cancel_token;
 
   const html = `
     <div style="${baseStyle()}">
@@ -100,6 +84,11 @@ export async function sendApprovalEmail(booking, baseUrl) {
         <p style="margin:4px 0;"><strong>Service:</strong> ${booking.service_name}</p>
         <p style="margin:4px 0;"><strong>When:</strong> ${when}</p>
         <p style="margin:4px 0;"><strong>Price:</strong> $${booking.service_price}</p>
+        <p style="margin:4px 0;"><strong>Address:</strong> 6522 84th Street, Lubbock, TX</p>
+      </div>
+      <div style="background:#EEF4FF;border:2px solid #4A7FD4;border-radius:8px;padding:16px 20px;margin:20px 0;">
+        <p style="margin:0;font-size:15px;font-weight:800;color:#111;">📍 When you arrive:</p>
+        <p style="margin:8px 0 0 0;font-size:15px;color:#111;">Text <strong>(915) 408-6981</strong> to let Ronny know you're outside and he'll come right out!</p>
       </div>
       <p style="font-size:14px;">Need to cancel? <a href="${cancelUrl}" style="color:#E03A2F;">Click here</a>.</p>
       <p style="color:#666;font-size:12px;margin-top:24px;">— RonnyCutz · 6522 84th St, Lubbock TX</p>
@@ -108,7 +97,7 @@ export async function sendApprovalEmail(booking, baseUrl) {
   await t.sendMail({
     from: process.env.GMAIL_USER,
     to: booking.client_email,
-    subject: `RonnyCutz — Appointment Confirmed! ${when}`,
+    subject: 'RonnyCutz — Appointment Confirmed! ' + when,
     html,
     attachments: [{ filename: 'appointment.ics', content: ics, contentType: 'text/calendar; charset=utf-8; method=REQUEST' }],
   });
@@ -118,7 +107,6 @@ export async function sendDenialEmail(booking, baseUrl) {
   const t = getTransporter();
   if (!t) return;
   const when = formatWhen(booking.start_iso);
-  const siteUrl = baseUrl;
 
   const html = `
     <div style="${baseStyle()}">
@@ -126,19 +114,13 @@ export async function sendDenialEmail(booking, baseUrl) {
       <p style="font-size:16px;">Hey ${booking.client_name}, unfortunately Ronny isn't available for your requested time.</p>
       <div style="background:#fff;border-left:4px solid #E03A2F;padding:16px 20px;margin:20px 0;border-radius:4px;border:2px solid #111;">
         <p style="margin:4px 0;"><strong>Service:</strong> ${booking.service_name}</p>
-        <p style="margin:4px 0;"><strong>Requested time:</strong> ${when}</p>
+        <p style="margin:4px 0;"><strong>Requested:</strong> ${when}</p>
       </div>
-      <p style="font-size:14px;">Try booking a different time:</p>
-      <a href="${siteUrl}/#book" style="display:inline-block;background:#E03A2F;color:#fff;padding:12px 28px;border-radius:50px;font-weight:800;font-size:14px;text-decoration:none;border:2.5px solid #111;box-shadow:3px 3px 0 #111;margin-top:8px;">
+      <a href="${baseUrl}/#book" style="display:inline-block;background:#E03A2F;color:#fff;padding:12px 28px;border-radius:50px;font-weight:800;font-size:14px;text-decoration:none;border:2.5px solid #111;box-shadow:3px 3px 0 #111;margin-top:8px;">
         Book Again →
       </a>
       <p style="color:#666;font-size:12px;margin-top:24px;">— RonnyCutz · 6522 84th St, Lubbock TX</p>
     </div>`;
 
-  await t.sendMail({
-    from: process.env.GMAIL_USER,
-    to: booking.client_email,
-    subject: `RonnyCutz — Booking Update`,
-    html,
-  });
+  await t.sendMail({ from: process.env.GMAIL_USER, to: booking.client_email, subject: 'RonnyCutz — Booking Update', html });
 }
