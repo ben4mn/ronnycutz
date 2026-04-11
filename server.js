@@ -1,9 +1,10 @@
+process.env.TZ = 'America/Chicago';
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
 import bookingsRouter from './server/routes/bookings.js';
 import availabilityRouter from './server/routes/availability.js';
 import calendarRouter from './server/routes/calendar.js';
