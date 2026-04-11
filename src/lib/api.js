@@ -7,11 +7,7 @@ export async function fetchAvailability(date, serviceId) {
 }
 
 export async function createBooking(payload) {
-  const r = await fetch(`${BASE}/bookings`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  const r = await fetch(`${BASE}/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   const data = await r.json();
   if (!r.ok) throw new Error(data.error || 'Booking failed');
   return data;
@@ -34,11 +30,18 @@ export async function adminFetchBookings(token) {
   return r.json();
 }
 
+export async function adminApproveBooking(id, token) {
+  const r = await fetch(`${BASE}/admin/bookings/${id}/approve`, { method: 'POST', headers: adminHeaders(token) });
+  return r.json();
+}
+
+export async function adminDenyBooking(id, token) {
+  const r = await fetch(`${BASE}/admin/bookings/${id}/deny`, { method: 'POST', headers: adminHeaders(token) });
+  return r.json();
+}
+
 export async function adminCancelBooking(id, token) {
-  const r = await fetch(`${BASE}/admin/bookings/${id}/cancel`, {
-    method: 'POST',
-    headers: adminHeaders(token),
-  });
+  const r = await fetch(`${BASE}/admin/bookings/${id}/cancel`, { method: 'POST', headers: adminHeaders(token) });
   return r.json();
 }
 
@@ -49,18 +52,11 @@ export async function adminFetchBlocks(token) {
 }
 
 export async function adminCreateBlock(payload, token) {
-  const r = await fetch(`${BASE}/admin/blocks`, {
-    method: 'POST',
-    headers: adminHeaders(token),
-    body: JSON.stringify(payload),
-  });
+  const r = await fetch(`${BASE}/admin/blocks`, { method: 'POST', headers: adminHeaders(token), body: JSON.stringify(payload) });
   return r.json();
 }
 
 export async function adminDeleteBlock(id, token) {
-  const r = await fetch(`${BASE}/admin/blocks/${id}`, {
-    method: 'DELETE',
-    headers: adminHeaders(token),
-  });
+  const r = await fetch(`${BASE}/admin/blocks/${id}`, { method: 'DELETE', headers: adminHeaders(token) });
   return r.json();
 }
