@@ -1,6 +1,6 @@
 # RonnyCutz — ronnycutz.com
 
-Single-page barber site with booking, Apple Calendar sync, and a token-protected admin page.
+Single-page barber site with booking, Apple Calendar sync, and a password-protected admin page. Auto-deploys from `main` within ~60s via cron (`deploy.sh` on the server) — see `CLAUDE.md` for the workflow.
 
 **Stack**: React 19 + Vite + Tailwind 4 + Express 5 + better-sqlite3 + Docker.
 
