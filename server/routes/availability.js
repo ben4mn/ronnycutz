@@ -10,11 +10,11 @@ router.get('/', (req, res) => {
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return res.status(400).json({ error: 'date (YYYY-MM-DD) required' });
   }
-  const service = services.find((s) => s.id === service_id);
+  const sid = parseInt(service_id, 10);
+  const service = services.find((s) => s.id === sid);
   if (!service) return res.status(400).json({ error: 'Unknown service_id' });
-
   const slots = getAvailability(date, service.duration_min, hours);
-  res.json({ date, service_id, duration_min: service.duration_min, slots });
+  res.json({ date, service_id: sid, duration_min: service.duration_min, slots });
 });
 
 export default router;
