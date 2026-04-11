@@ -25,23 +25,16 @@ function lastSlot(closeStr) {
   return fmt(lh + ':' + lm);
 }
 
-function DayCard({ label, slots, delay }) {
-  const open = slots && slots.length > 0;
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4, delay }}
-      style={{ background: open ? '#fff' : '#f5f5f5', border: '2.5px solid #111', borderRadius: '12px', padding: '16px 20px', boxShadow: '3px 3px 0 #111', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-    >
-      <span style={{ fontWeight: 800, fontSize: '14px', color: '#111' }}>{label}</span>
-      <span style={{ fontWeight: 700, fontSize: '13px', color: open ? '#4A7FD4' : '#aaa' }}>
-        {open ? fmt(slots[0][0]) + ' – ' + lastSlot(slots[0][1]) : 'Closed'}
-      </span>
-    </motion.div>
-  );
-}
+const cardStyle = (open) => ({
+  background: open ? '#fff' : '#f5f5f5',
+  border: '2.5px solid #111',
+  borderRadius: '12px',
+  padding: '16px 20px',
+  boxShadow: '3px 3px 0 #111',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+});
 
 export default function Hours() {
   const phone = shop.phone || '';
@@ -51,30 +44,51 @@ export default function Hours() {
     <section id="hours" style={{ padding: '44px 28px', background: '#F5F8FF', borderBottom: '3px solid #111' }}>
       <div style={{ maxWidth: '860px', margin: '0 auto' }}>
         <SectionHeader eyebrow="Location & Hours" title="Service Hours" blue />
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', maxWidth: '500px', marginBottom: '24px' }}>
-          {DAYS.map((d, i) => (
-            <DayCard key={d.key} label={d.label} slots={hours[d.key]} delay={i * 0.05} />
-          ))}
+          {DAYS.map((d, i) => {
+            const slots = hours[d.key];
+            const open = slots && slots.length > 0;
+            return (
+              <motion.div
+                key={d.key}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+                style={cardStyle(open)}
+              >
+                <span style={{ fontWeight: 800, fontSize: '14px', color: '#111' }}>{d.label}</span>
+                <span style={{ fontWeight: 700, fontSize: '13px', color: open ? '#4A7FD4' : '#aaa' }}>
+                  {open ? fmt(slots[0][0]) + ' - ' + lastSlot(slots[0][1]) : 'Closed'}
+                </span>
+              </motion.div>
+            );
+          })}
+
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            style={{ background: '#f5f5f5', border: '2.5px solid #111', borderRadius: '12px', padding: '16px 20px', boxShadow: '3px 3px 0 #111', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            transition={{ duration: 0.4, delay: 0.24 }}
+            style={cardStyle(false)}
           >
-            <span style={{ fontWeight: 800, fontSize: '14px', color: '#111' }}>Fri – Sun</span>
+            <span style={{ fontWeight: 800, fontSize: '14px', color: '#111' }}>Fri - Sun</span>
             <span style={{ fontWeight: 700, fontSize: '13px', color: '#aaa' }}>Closed</span>
           </motion.div>
+
+          <div style={{ visibility: 'hidden', border: '2.5px solid transparent', borderRadius: '12px', padding: '16px 20px' }} />
         </div>
+
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <a href={shop.map_url} target="_blank" rel="noopener noreferrer"
             style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fff', border: '2.5px solid #111', borderRadius: '9999px', padding: '10px 20px', boxShadow: '3px 3px 0 #111', fontSize: '14px', fontWeight: 700, color: '#111', textDecoration: 'none' }}>
-            📍 {shop.address}
+            {shop.address}
           </a>
           {phone && (
             <a href={'tel:' + phoneDigits}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#E03A2F', border: '2.5px solid #111', borderRadius: '9999px', padding: '10px 20px', boxShadow: '3px 3px 0 #111', fontSize: '14px', fontWeight: 700, color: '#fff', textDecoration: 'none' }}>
-              📞 {phone}
+              {phone}
             </a>
           )}
         </div>
