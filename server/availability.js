@@ -2,6 +2,7 @@ import db from './db.js';
 
 const SLOT_STEP_MIN = 60;
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+const TZ = 'America/Chicago';
 
 function parseHM(str) {
   const [h, m] = str.split(':').map(Number);
@@ -17,10 +18,13 @@ function dateToLocalYMD(d) {
 
 export function buildSlots(dateYMD, durationMin, hours) {
   const [y, m, d] = dateYMD.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  const dayKey = DAY_KEYS[date.getDay()];
+  // Use Intl to get the day-of-week in Chicago time
+  const refDate = new Date(`${dateYMD}T12:00:00Z`);
+  const dayName = refDate.toLocaleDateString('en-US', { weekday: 'short', timeZone: TZ }).toLowerCase();
+  const dayKey = dayName.substring(0, 3);
   const windows = hours[dayKey];
   if (!windows || windows.length === 0) return [];
+
   const slots = [];
   for (const [openStr, closeStr] of windows) {
     const open = parseHM(openStr);
@@ -28,8 +32,14 @@ export function buildSlots(dateYMD, durationMin, hours) {
     for (let t = open; t + durationMin <= close; t += SLOT_STEP_MIN) {
       const hh = String(Math.floor(t / 60)).padStart(2, '0');
       const mm = String(t % 60).padStart(2, '0');
-      const local = new Date(y, m - 1, d, Number(hh), Number(mm), 0, 0);
-      slots.push(local.toISOString());
+      // Build time in Chicago timezone using Intl
+      const localStr = `${dateYMD}T${hh}:${mm}:00`;
+      // Parse as Chicago local time → UTC
+      const chicagoDate = new Date(new Date(localStr).toLocaleString('en-US', { timeZone: TZ }));
+      const utcDate = new Date(localStr);
+      const offset = utcDate - chicagoDate;
+      const slotUtc = new Date(utcDate.getTime() + offset);
+      slots.push(slotUtc.toISOString());
     }
   }
   return slots;
@@ -38,8 +48,8 @@ export function buildSlots(dateYMD, durationMin, hours) {
 export function getAvailability(dateYMD, durationMin, hours) {
   const all = buildSlots(dateYMD, durationMin, hours);
   if (all.length === 0) return [];
-  const dayStart = new Date(`${dateYMD}T00:00:00`);
-  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+  const dayStart = new Date(`${dateYMD}T00:00:00Z`);
+  const dayEnd = new Date(dayStart.getTime() + 48 * 60 * 60 * 1000);
   const bookings = db
     .prepare(
       `SELECT start_iso, duration_min FROM bookings
