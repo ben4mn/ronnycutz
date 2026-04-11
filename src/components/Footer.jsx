@@ -8,9 +8,11 @@ export default function Footer() {
           {shop.name}<span className="text-brass">.</span>
         </div>
         <div className="flex gap-6 text-sm text-text-subtle">
-          <a href={`tel:${shop.phone.replace(/\s/g, '')}`} className="hover:text-brass">
-            Call
-          </a>
+          {shop.phone && (
+            <a href={`tel:${shop.phone.replace(/\s/g, '')}`} className="hover:text-brass">
+              Call
+            </a>
+          )}
           <a href={shop.instagram_url} target="_blank" rel="noopener noreferrer" className="hover:text-brass">
             Instagram
           </a>

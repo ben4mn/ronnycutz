@@ -48,16 +48,16 @@ export default function Hours() {
           <div>
             <h3 className="font-display text-2xl text-brass mb-6">Visit</h3>
             <address className="not-italic text-cream leading-relaxed mb-4">
-              {shop.address.line1}
-              <br />
-              {shop.address.city}
+              {shop.address}
             </address>
             <div className="space-y-2 text-cream/80 text-sm mb-6">
-              <div>
-                <a href={`tel:${shop.phone.replace(/\s/g, '')}`} className="hover:text-brass">
-                  {shop.phone_display}
-                </a>
-              </div>
+              {shop.phone && (
+                <div>
+                  <a href={`tel:${shop.phone.replace(/\s/g, '')}`} className="hover:text-brass">
+                    {shop.phone_display || shop.phone}
+                  </a>
+                </div>
+              )}
               <div>
                 <a
                   href={shop.instagram_url}
@@ -72,7 +72,7 @@ export default function Hours() {
             <div className="aspect-video overflow-hidden border border-charcoal-3">
               <iframe
                 title="Map"
-                src={shop.map_embed}
+                src={`https://www.google.com/maps?q=${encodeURIComponent(shop.address)}&output=embed`}
                 className="w-full h-full grayscale contrast-125 opacity-80"
                 loading="lazy"
               />
