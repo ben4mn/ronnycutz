@@ -40,7 +40,7 @@ export default function BookingSection() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  const days = useMemo(() => nextDays(14), []);
+  const days = useMemo(() => nextDays(30), []);
   const service = services.find((s) => s.id === serviceId);
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export default function BookingSection() {
           <SectionHeader eyebrow="Confirmed" title="You're Booked" />
           <div className="mt-10 p-8 bg-charcoal-2 border border-brass/40">
             <p className="text-cream/80 mb-2">
-              {result.service_name} —{' '}
+              {result.service_name} â{' '}
               {new Date(result.start_iso).toLocaleString('en-US', {
                 weekday: 'long',
                 month: 'long',
@@ -120,7 +120,7 @@ export default function BookingSection() {
                 }}
                 className="text-text-subtle text-sm hover:text-brass transition"
               >
-                Book another →
+                Book another â
               </button>
             </div>
           </div>
@@ -191,7 +191,7 @@ export default function BookingSection() {
           <div>
             <Label>3. Select a time</Label>
             {loadingSlots ? (
-              <p className="text-text-subtle text-sm">Loading…</p>
+              <p className="text-text-subtle text-sm">Loadingâ¦</p>
             ) : slots.length === 0 ? (
               <p className="text-text-subtle text-sm italic">
                 No availability on this day. Try another.
@@ -244,7 +244,7 @@ export default function BookingSection() {
                 onChange={(v) => setForm({ ...form, email: v })}
               />
               <textarea
-                placeholder="Notes (optional — specific style, allergies, etc.)"
+                placeholder="Notes (optional â specific style, allergies, etc.)"
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 rows={3}
@@ -265,9 +265,9 @@ export default function BookingSection() {
             className="w-full py-4 bg-brass text-charcoal font-semibold text-lg hover:bg-brass-2 transition disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting
-              ? 'Booking…'
+              ? 'Bookingâ¦'
               : selectedSlot
-              ? `Confirm — ${service.name} $${service.price}`
+              ? `Confirm â ${service.name} $${service.price}`
               : 'Choose a time to continue'}
           </button>
         </form>
