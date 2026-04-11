@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import services from '../../data/services.json';
 import { fetchAvailability, createBooking } from '../../lib/api.js';
 import { SectionHeader } from '../Services.jsx';
@@ -71,7 +72,7 @@ export default function BookingSection() {
       <section id="book" style={{ padding: '44px 28px', background: '#EEF4FF', borderBottom: '3px solid #111' }}>
         <div style={{ maxWidth: '560px', margin: '0 auto', textAlign: 'center' }}>
           <div style={{ marginBottom: '8px' }}><span className="section-pill-blue">Confirmed</span></div>
-          <h2 style={{ fontSize: '30px', fontWeight: 900, marginBottom: '24px' }}>You're Booked! ÃÂ¢ÃÂÃÂ</h2>
+          <h2 style={{ fontSize: '30px', fontWeight: 900, marginBottom: '24px' }}>You're Booked! ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ</h2>
           <div style={{ background: '#fff', border: '2.5px solid #111', borderRadius: '14px', padding: '28px', boxShadow: '4px 4px 0 #111', marginBottom: '20px' }}>
             <p style={{ fontSize: '16px', fontWeight: 700, marginBottom: '8px' }}>{result.service_name}</p>
             <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
@@ -84,7 +85,7 @@ export default function BookingSection() {
           </div>
           <button type="button" onClick={() => { setResult(null); setForm({ name: '', phone: '', email: '', notes: '' }); setSelectedSlot(null); }}
             style={{ background: 'none', border: 'none', color: '#4A7FD4', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}>
-            Book another ÃÂ¢ÃÂÃÂ
+            Book another ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
           </button>
         </div>
       </section>
@@ -140,21 +141,35 @@ export default function BookingSection() {
           <div>
             <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#E03A2F', marginBottom: '12px' }}>3. Select a time</div>
             {loadingSlots ? (
-              <p style={{ color: '#888', fontSize: '14px' }}>LoadingÃÂ¢ÃÂÃÂ¦</p>
+              <p style={{ color: '#888', fontSize: '14px' }}>LoadingÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦</p>
             ) : slots.length === 0 ? (
               <p style={{ color: '#888', fontSize: '14px', fontStyle: 'italic' }}>No availability on this day - try another.</p>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-                {slots.map((slot) => {
-                  const active = slot === selectedSlot;
-                  return (
-                    <button key={slot} type="button" onClick={() => setSelectedSlot(slot)}
-                      style={{ padding: '10px', border: active ? '2px solid #4A7FD4' : '2px solid #111', borderRadius: '8px', background: active ? '#EEF4FF' : '#fff', fontWeight: 700, fontSize: '13px', color: active ? '#4A7FD4' : '#111', cursor: 'pointer', boxShadow: active ? '2px 2px 0 #4A7FD4' : '2px 2px 0 #111' }}>
-                      {formatSlotTime(slot)}
-                    </button>
-                  );
-                })}
-              </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedDate}
+                  style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}
+                >
+                  {slots.map((slot, i) => {
+                    const active = slot === selectedSlot;
+                    return (
+                      <motion.button
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedSlot(slot)}
+                        initial={{ opacity: 0, y: 14, scale: 0.7 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 350, damping: 18, delay: i * 0.05 }}
+                        whileHover={{ scale: 1.06, transition: { type: 'spring', stiffness: 400, damping: 12 } }}
+                        whileTap={{ scale: 0.93 }}
+                        style={{ padding: '10px', border: active ? '2px solid #4A7FD4' : '2px solid #111', borderRadius: '8px', background: active ? '#EEF4FF' : '#fff', fontWeight: 700, fontSize: '13px', color: active ? '#4A7FD4' : '#111', cursor: 'pointer', boxShadow: active ? '2px 2px 0 #4A7FD4' : '2px 2px 0 #111' }}
+                      >
+                        {formatSlotTime(slot)}
+                      </motion.button>
+                    );
+                  })}
+                </motion.div>
+              </AnimatePresence>
             )}
           </div>
 
@@ -187,7 +202,7 @@ export default function BookingSection() {
 
           <button type="submit" disabled={submitting || !selectedSlot}
             style={{ width: '100%', padding: '15px', background: submitting || !selectedSlot ? '#ccc' : '#E03A2F', color: '#fff', border: '2.5px solid #111', borderRadius: '50px', fontWeight: 800, fontSize: '16px', cursor: submitting || !selectedSlot ? 'not-allowed' : 'pointer', boxShadow: '4px 4px 0 #111' }}>
-            {submitting ? 'Sending requestÃÂ¢ÃÂÃÂ¦' : selectedSlot ? `Request ÃÂ¢ÃÂÃÂ ${service.name} $${service.price}` : 'Choose a time to continue'}
+            {submitting ? 'Sending requestÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦' : selectedSlot ? `Request ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ${service.name} $${service.price}` : 'Choose a time to continue'}
           </button>
 
         </form>
