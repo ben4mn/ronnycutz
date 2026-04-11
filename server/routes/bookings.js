@@ -98,8 +98,12 @@ router.get('/:id/cancel', (req, res) => {
   const booking = db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id);
   if (!booking || booking.cancel_token !== token) return res.status(404).send('Invalid cancellation link');
   if (booking.status === 'cancelled') return res.send(renderPage('This booking is already cancelled.'));
+  const hoursUntil = (new Date(booking.start_iso) - Date.now()) / (1000 * 60 * 60);
+  if (hoursUntil < 24) {
+    return res.send(renderPage('Cancellations require at least 24 hours notice. Please contact Aaron directly at (915) 408-6981 to cancel last minute.'));
+  }
   db.prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ?").run(booking.id);
-  res.send(renderPage('Your booking has been cancelled.'));
+  res.send(renderPage('Your booking has been cancelled successfully.'));
 });
 
 function renderPage(message) {
