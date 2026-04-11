@@ -3,78 +3,74 @@ import shop from '../data/shop.json';
 
 export default function Hero() {
   return (
-    <section id="top" className="relative min-h-[100svh] flex items-center overflow-hidden bg-charcoal hero-grain">
-      <div
-        className="absolute inset-0 opacity-[0.08] pointer-events-none"
-        style={{
-          backgroundImage: 'radial-gradient(circle, #E03A2F 1.25px, transparent 1.25px)',
-          backgroundSize: '24px 24px',
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-charcoal/0 via-charcoal/0 to-charcoal pointer-events-none" />
+    <section id="top" style={{ background: '#FFF9F0', borderTop: '8px solid #E03A2F', position: 'relative', overflow: 'hidden', minHeight: '100svh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 28px 80px' }}>
 
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-6 py-24">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6"
+      {/* Instagram pill */}
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        style={{ marginBottom: '32px' }}
+      >
+        <a
+          href={shop.instagram_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: 'inline-block', background: '#4A7FD4', color: '#fff', fontSize: '11px', fontWeight: 800, letterSpacing: '0.25em', textTransform: 'uppercase', padding: '6px 16px', borderRadius: '9999px', border: '2px solid #111', boxShadow: '2px 2px 0 #111', textDecoration: 'none' }}
         >
-          <span className="inline-block bg-charcoal-2 text-brass text-xs font-semibold tracking-[0.3em] uppercase px-4 py-1.5 rounded-full border border-brass/40">
-            @{shop.instagram} · Lubbock, TX
-          </span>
-        </motion.div>
+          @{shop.instagram} · Lubbock, TX
+        </a>
+      </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-8"
+      {/* Logo */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        style={{ marginBottom: '28px' }}
+      >
+        <img
+          src="/logo.jpg"
+          alt="RonnyCutz"
+          style={{ height: '180px', width: 'auto', filter: 'drop-shadow(3px 3px 0px #111)' }}
+        />
+      </motion.div>
+
+      {/* Address badge */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        style={{ marginBottom: '32px' }}
+      >
+        <span style={{ fontSize: '12px', fontWeight: 700, color: '#111', letterSpacing: '0.15em', textTransform: 'uppercase', border: '2px solid #111', padding: '5px 14px', borderRadius: '4px', background: '#fff' }}>
+          📍 {shop.address}
+        </span>
+      </motion.div>
+
+      {/* Buttons */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}
+      >
+        <a
+          href="#book"
+          style={{ background: '#4A7FD4', color: 'white', padding: '13px 28px', borderRadius: '9999px', fontWeight: 800, fontSize: '15px', textDecoration: 'none', border: '2.5px solid #111', boxShadow: '4px 4px 0 #111', display: 'inline-block' }}
         >
-          <img
-            src="/logo.jpg"
-            alt="RonnyCutz"
-            className="h-32 sm:h-44 w-auto rounded-lg"
-            style={{ filter: 'drop-shadow(0 6px 24px rgba(224,58,47,0.3))' }}
-          />
-        </motion.div>
-
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-text-subtle text-lg sm:text-xl max-w-lg mb-10"
+          Book an Appointment →
+        </a>
+        <a
+          href="#services"
+          style={{ background: '#fff', color: '#111', padding: '13px 28px', borderRadius: '9999px', fontWeight: 800, fontSize: '15px', textDecoration: 'none', border: '2.5px solid #111', boxShadow: '4px 4px 0 #111', display: 'inline-block' }}
         >
-          {shop.tagline}.
-        </motion.p>
+          See Services
+        </a>
+      </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-col sm:flex-row gap-3 sm:gap-4"
-        >
-          <a
-            href="#book"
-            className="group inline-flex items-center justify-center px-8 py-4 bg-brass text-charcoal font-semibold tracking-wide hover:bg-brass-2 transition-colors"
-          >
-            Book an Appointment
-            <span className="ml-2 transition-transform group-hover:translate-x-1">→</span>
-          </a>
-          <a
-            href={shop.instagram_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center px-8 py-4 border border-cream/30 text-cream font-semibold tracking-wide hover:border-brass hover:text-brass transition-colors"
-          >
-            @{shop.instagram}
-          </a>
-        </motion.div>
-      </div>
-
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-text-subtle text-xs tracking-[0.3em] uppercase hidden sm:block">
-        scroll
-      </div>
+      {/* Bottom stripe */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '14px', background: 'repeating-linear-gradient(90deg, #E03A2F 0px, #E03A2F 24px, #4A7FD4 24px, #4A7FD4 48px, #fff 48px, #fff 72px)', borderTop: '3px solid #111' }} />
     </section>
   );
 }
