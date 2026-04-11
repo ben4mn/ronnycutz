@@ -1,13 +1,21 @@
 import { motion } from 'framer-motion';
 import services from '../data/services.json';
 
+export function SectionHeader({ eyebrow, title, blue }) {
+  return (
+    <div className="mb-8">
+      <span className={blue ? 'section-pill-blue' : 'section-pill-red'}>{eyebrow}</span>
+      <h2 style={{ fontSize: '30px', fontWeight: 900, marginTop: '12px', color: '#111' }}>{title}</h2>
+    </div>
+  );
+}
+
 export default function Services() {
   return (
-    <section id="services" className="py-24 px-6 bg-charcoal">
-      <div className="max-w-5xl mx-auto">
-        <SectionHeader eyebrow="The Menu" title="Services" />
-
-        <div className="grid sm:grid-cols-2 gap-5 mt-14">
+    <section id="services" style={{ padding: '44px 28px', background: '#fff', borderBottom: '3px solid #111' }}>
+      <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+        <SectionHeader eyebrow="What We Offer" title="Services" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
           {services.map((s, i) => (
             <motion.a
               key={s.id}
@@ -15,38 +23,34 @@ export default function Services() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.5, delay: i * 0.05 }}
-              className="group relative p-7 bg-charcoal-2 border border-charcoal-3 hover:border-brass/60 transition-colors"
+              transition={{ duration: 0.4, delay: i * 0.05 }}
+              style={{
+                display: 'block',
+                textDecoration: 'none',
+                background: i % 2 === 0 ? '#FFF0EF' : '#EEF4FF',
+                border: '2.5px solid #111',
+                borderRadius: '14px',
+                padding: '20px',
+                boxShadow: '4px 4px 0 #111',
+                transition: 'transform 0.1s, box-shadow 0.1s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translate(1px,1px)'; e.currentTarget.style.boxShadow = '3px 3px 0 #111'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '4px 4px 0 #111'; }}
             >
-              <div className="flex items-start justify-between gap-4 mb-3">
-                <h3 className="font-display text-2xl text-cream group-hover:text-brass transition-colors">
-                  {s.name}
-                </h3>
-                <div className="text-right shrink-0">
-                  <div className="text-brass text-2xl font-display">${s.price}</div>
-                  <div className="text-text-subtle text-xs uppercase tracking-widest">
-                    {s.duration_min} min
-                  </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#111', margin: 0 }}>{s.name}</h3>
+                <span style={{ fontSize: '26px', fontWeight: 900, color: '#E03A2F', marginLeft: '12px' }}>${s.price}</span>
+              </div>
+              <div style={{ fontSize: '12px', color: '#666', fontWeight: 600, marginBottom: '8px' }}>{s.duration_minutes} min</div>
+              {s.description && (
+                <div style={{ fontSize: '12px', color: '#4A7FD4', fontWeight: 700, borderTop: '1.5px solid #ddd', paddingTop: '8px', marginTop: '8px' }}>
+                  ✦ {s.description}
                 </div>
-              </div>
-              <p className="text-cream/70 text-sm leading-relaxed">{s.description}</p>
-              <div className="mt-5 text-brass text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                Book this →
-              </div>
+              )}
             </motion.a>
           ))}
         </div>
       </div>
     </section>
-  );
-}
-
-export function SectionHeader({ eyebrow, title }) {
-  return (
-    <div className="text-center">
-      <p className="text-brass uppercase tracking-[0.3em] text-xs mb-4">{eyebrow}</p>
-      <h2 className="font-display text-4xl sm:text-5xl text-cream">{title}</h2>
-      <div className="brass-divider w-24 mx-auto mt-6" />
-    </div>
   );
 }
