@@ -71,21 +71,21 @@ export default function BookingSection() {
     return (
       <section id="book" style={{ padding: '44px 28px', background: '#EEF4FF', borderBottom: '3px solid #111' }}>
         <div style={{ maxWidth: '560px', margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ marginBottom: '8px' }}><span className="section-pill-blue">Confirmed</span></div>
-          <h2 style={{ fontSize: '30px', fontWeight: 900, marginBottom: '24px' }}>You're Booked! ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ</h2>
+          <div style={{ marginBottom: '8px' }}><span className="section-pill-blue">Pending Approval</span></div>
+          <h2 style={{ fontSize: '30px', fontWeight: 900, marginBottom: '24px' }}>Request PendingÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ</h2>
           <div style={{ background: '#fff', border: '2.5px solid #111', borderRadius: '14px', padding: '28px', boxShadow: '4px 4px 0 #111', marginBottom: '20px' }}>
             <p style={{ fontSize: '16px', fontWeight: 700, marginBottom: '8px' }}>{result.service_name}</p>
             <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
               {new Date(result.start_iso).toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
             </p>
-            <p style={{ fontSize: '13px', color: '#888', marginBottom: '20px' }}>Request sent! You'll get a confirmation email once Ronny approves.</p>
+            <p style={{ fontSize: '13px', color: '#888', marginBottom: '20px' }}>Your request has been sent! Aaron will review and confirm your appointment shortly. Check your email for updates.</p>
             <a href={result.ics_url} style={{ display: 'inline-block', background: '#4A7FD4', color: '#fff', padding: '10px 24px', borderRadius: '50px', fontWeight: 800, fontSize: '14px', textDecoration: 'none', border: '2px solid #111', boxShadow: '3px 3px 0 #111' }}>
               Add to Calendar
             </a>
           </div>
           <button type="button" onClick={() => { setResult(null); setForm({ name: '', phone: '', email: '', notes: '' }); setSelectedSlot(null); }}
             style={{ background: 'none', border: 'none', color: '#4A7FD4', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}>
-            Book another ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
+            Book another ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
           </button>
         </div>
       </section>
@@ -152,7 +152,7 @@ export default function BookingSection() {
           <div>
             <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#E03A2F', marginBottom: '12px' }}>3. Select a time</div>
             {loadingSlots ? (
-              <p style={{ color: '#888', fontSize: '14px' }}>LoadingÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦</p>
+              <p style={{ color: '#888', fontSize: '14px' }}>LoadingÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦</p>
             ) : slots.length === 0 ? (
               <p style={{ color: '#888', fontSize: '14px', fontStyle: 'italic' }}>No availability on this day - try another.</p>
             ) : (
