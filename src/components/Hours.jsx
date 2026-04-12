@@ -25,69 +25,54 @@ function lastSlot(closeStr) {
   return fmt(lh + ':' + lm);
 }
 
-const cardStyle = (open) => ({
-  background: open ? '#fff' : '#f5f5f5',
-  border: '2.5px solid #111',
-  borderRadius: '12px',
-  padding: '16px 20px',
-  boxShadow: '3px 3px 0 #111',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-});
-
 export default function Hours() {
   const phone = shop.phone || '';
   const phoneDigits = phone.replace(/\D/g, '');
 
   return (
-    <section id="hours" style={{ padding: '44px 28px', background: '#F5F8FF', borderBottom: '3px solid #111' }}>
+    <section id="hours" style={{ padding: '36px 16px', background: '#F5F8FF', borderBottom: '3px solid #111' }}>
+      <style>{`
+        .hours-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 500px; margin-bottom: 20px; }
+        @media (max-width: 500px) { .hours-grid { grid-template-columns: 1fr; max-width: 100%; } }
+        .hours-contact { display: flex; gap: 10px; flex-wrap: wrap; }
+      `}</style>
       <div style={{ maxWidth: '860px', margin: '0 auto' }}>
         <SectionHeader eyebrow="Location & Hours" title="Service Hours" blue />
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', maxWidth: '500px', marginBottom: '24px' }}>
+        <div className="hours-grid">
           {DAYS.map((d, i) => {
             const slots = hours[d.key];
             const open = slots && slots.length > 0;
             return (
-              <motion.div
-                key={d.key}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.06 }}
-                style={cardStyle(open)}
+              <motion.div key={d.key}
+                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.06 }}
+                style={{ background: open ? '#fff' : '#f5f5f5', border: '2.5px solid #111', borderRadius: '12px', padding: '14px 16px', boxShadow: '3px 3px 0 #111', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
                 <span style={{ fontWeight: 800, fontSize: '14px', color: '#111' }}>{d.label}</span>
-                <span style={{ fontWeight: 700, fontSize: '13px', color: open ? '#4A7FD4' : '#aaa' }}>
+                <span style={{ fontWeight: 700, fontSize: '12px', color: open ? '#4A7FD4' : '#aaa' }}>
                   {open ? fmt(slots[0][0]) + ' - ' + lastSlot(slots[0][1]) : 'Closed'}
                 </span>
               </motion.div>
             );
           })}
-
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.24 }}
-            style={cardStyle(false)}
+            initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.4, delay: 0.24 }}
+            style={{ background: '#f5f5f5', border: '2.5px solid #111', borderRadius: '12px', padding: '14px 16px', boxShadow: '3px 3px 0 #111', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <span style={{ fontWeight: 800, fontSize: '14px', color: '#111' }}>Fri - Sun</span>
-            <span style={{ fontWeight: 700, fontSize: '13px', color: '#aaa' }}>Closed</span>
+            <span style={{ fontWeight: 700, fontSize: '12px', color: '#aaa' }}>Closed</span>
           </motion.div>
-
-          <div style={{ visibility: 'hidden', border: '2.5px solid transparent', borderRadius: '12px', padding: '16px 20px' }} />
+          <div style={{ visibility: 'hidden', borderRadius: '12px', padding: '14px 16px' }} className="hide-mobile" />
         </div>
-
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <div className="hours-contact">
           <a href={shop.map_url} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fff', border: '2.5px solid #111', borderRadius: '9999px', padding: '10px 20px', boxShadow: '3px 3px 0 #111', fontSize: '14px', fontWeight: 700, color: '#111', textDecoration: 'none' }}>
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fff', border: '2.5px solid #111', borderRadius: '9999px', padding: '10px 16px', boxShadow: '3px 3px 0 #111', fontSize: '13px', fontWeight: 700, color: '#111', textDecoration: 'none' }}>
             {shop.address}
           </a>
           {phone && (
             <a href={'tel:' + phoneDigits}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#E03A2F', border: '2.5px solid #111', borderRadius: '9999px', padding: '10px 20px', boxShadow: '3px 3px 0 #111', fontSize: '14px', fontWeight: 700, color: '#fff', textDecoration: 'none' }}>
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#E03A2F', border: '2.5px solid #111', borderRadius: '9999px', padding: '10px 16px', boxShadow: '3px 3px 0 #111', fontSize: '13px', fontWeight: 700, color: '#fff', textDecoration: 'none' }}>
               {phone}
             </a>
           )}
