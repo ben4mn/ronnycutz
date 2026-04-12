@@ -27,7 +27,7 @@ export default function Hero() {
           transition={{ duration: 0.5 }}
           style={{ background: '#4A7FD4', color: '#fff', fontSize: '11px', fontWeight: 800, letterSpacing: '0.25em', textTransform: 'uppercase', padding: '6px 16px', borderRadius: '9999px', border: '2px solid #111', boxShadow: '2px 2px 0 #111', textDecoration: 'none' }}
         >
-          @{shop.instagram} · Lubbock, TX
+          @{shop.instagram} . Lubbock, TX
         </motion.a>
 
         <motion.img
@@ -45,7 +45,7 @@ export default function Hero() {
           transition={{ duration: 0.5, delay: 0.2 }}
           style={{ fontSize: '12px', fontWeight: 700, color: '#111', letterSpacing: '0.15em', textTransform: 'uppercase', border: '2px solid #111', padding: '5px 14px', borderRadius: '4px', background: 'rgba(255,255,255,0.9)' }}
         >
-          📍 {shop.address}
+           {shop.address}
         </motion.span>
 
         <motion.div
@@ -58,7 +58,7 @@ export default function Hero() {
             href="#book"
             style={{ background: '#4A7FD4', color: 'white', padding: '13px 28px', borderRadius: '9999px', fontWeight: 800, fontSize: '15px', textDecoration: 'none', border: '2.5px solid #111', boxShadow: '4px 4px 0 #111', display: 'inline-block' }}
           >
-            Book an Appointment →
+            Book an Appointment 
           </a>
           <a
             href="#services"
