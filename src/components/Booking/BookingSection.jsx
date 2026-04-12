@@ -37,7 +37,7 @@ export default function BookingSection() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const days = useMemo(() => nextDays(30), []);
+  const days = useMemo(() => nextDays(14), []);
   const service = services.find((s) => s.id === serviceId);
 
   useEffect(() => {
