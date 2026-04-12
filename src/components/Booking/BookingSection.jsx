@@ -37,6 +37,7 @@ export default function BookingSection() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [agreedToPolicy, setAgreedToPolicy] = useState(false);
   const days = useMemo(() => nextDays(14), []);
   const service = services.find((s) => s.id === serviceId);
 
@@ -54,6 +55,7 @@ export default function BookingSection() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!selectedSlot) { setError('Pick a time slot first.'); return; }
+    if (!agreedToPolicy) { setError('Please agree to the booking policy to continue.'); return; }
     setError(null);
     setSubmitting(true);
     try {
@@ -200,19 +202,30 @@ export default function BookingSection() {
           </div>
 
           
-          <div style={{ background: "#FFF9F0", border: "2.5px solid #111", borderRadius: "12px", padding: "16px 20px", boxShadow: "3px 3px 0 #111" }}>
+          <div style={{ background: agreedToPolicy ? "#EEF4FF" : "#FFF9F0", border: agreedToPolicy ? "2.5px solid #4A7FD4" : "2.5px solid #111", borderRadius: "12px", padding: "16px 20px", boxShadow: agreedToPolicy ? "3px 3px 0 #4A7FD4" : "3px 3px 0 #111", transition: "all 0.2s" }}>
             <p style={{ fontWeight: 800, fontSize: "13px", color: "#E03A2F", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.1em" }}>Booking Policy</p>
-            <ul style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px" }}>
+            <ul style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
               <li style={{ fontSize: "13px", color: "#444", fontWeight: 600 }}>Please arrive <strong>5-10 minutes early</strong> so we can start right on time.</li>
               <li style={{ fontSize: "13px", color: "#444", fontWeight: 600 }}>If you are <strong>more than 15 minutes late</strong>, your spot may be given to the next client.</li>
               <li style={{ fontSize: "13px", color: "#444", fontWeight: 600 }}>Cancellations require <strong>at least 24 hours notice</strong>. Late cancellations may result in being blocked from future bookings.</li>
             </ul>
+            <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={agreedToPolicy}
+                onChange={e => setAgreedToPolicy(e.target.checked)}
+                style={{ width: "18px", height: "18px", accentColor: "#4A7FD4", cursor: "pointer", flexShrink: 0 }}
+              />
+              <span style={{ fontSize: "13px", fontWeight: 700, color: "#111" }}>
+                I have read and agree to the booking policy
+              </span>
+            </label>
           </div>
 
           {error && <p style={{ color: '#E03A2F', fontSize: '14px', fontWeight: 700 }}>{error}</p>}
 
           <button type="submit" disabled={submitting || !selectedSlot}
-            style={{ width: '100%', padding: '15px', background: submitting || !selectedSlot ? '#ccc' : '#E03A2F', color: '#fff', border: '2.5px solid #111', borderRadius: '50px', fontWeight: 800, fontSize: '16px', cursor: submitting || !selectedSlot ? 'not-allowed' : 'pointer', boxShadow: '4px 4px 0 #111' }}>
+            style={{ width: '100%', padding: '15px', background: submitting || !selectedSlot || !agreedToPolicy ? '#ccc' : '#E03A2F', color: '#fff', border: '2.5px solid #111', borderRadius: '50px', fontWeight: 800, fontSize: '16px', cursor: submitting || !selectedSlot || !agreedToPolicy ? 'not-allowed' : 'pointer', boxShadow: '4px 4px 0 #111' }}>
             {submitting ? 'Sending...' : selectedSlot ? `Request - ${service.name} ${service.price}` : 'Choose a time to continue'}
           </button>
 
