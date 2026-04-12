@@ -11,7 +11,7 @@ export default function Footer() {
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
         {phone && (
           <a href={`tel:${phoneDigits}`} style={{ color: '#fff', fontWeight: 700, fontSize: '13px', textDecoration: 'none' }}>
-            📞 {phone}
+             {phone}
           </a>
         )}
         <a href={shop.instagram_url} target="_blank" rel="noopener noreferrer" style={{ color: '#4A7FD4', fontWeight: 700, fontSize: '13px', textDecoration: 'none' }}>
@@ -19,7 +19,7 @@ export default function Footer() {
         </a>
         <span style={{ color: '#aaa', fontSize: '12px' }}>{shop.address}</span>
       </div>
-      <span style={{ color: '#555', fontSize: '11px' }}>© {new Date().getFullYear()}</span>
+      <span style={{ color: '#555', fontSize: '11px' }}>(c) {new Date().getFullYear()}</span>
     </footer>
   );
 }
