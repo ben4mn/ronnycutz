@@ -4,6 +4,7 @@ import Gallery from '../components/Gallery.jsx';
 import BookingSection from '../components/Booking/BookingSection.jsx';
 import Hours from '../components/Hours.jsx';
 import Footer from '../components/Footer.jsx';
+import Reviews from '../components/Reviews.jsx';
 import StickyMobileBar from '../components/StickyMobileBar.jsx';
 
 function Stripe() {
@@ -47,6 +48,8 @@ export default function LandingPage() {
       <Hours />
       <Stripe />
       <Gallery />
+      <Stripe />
+      <Reviews />
       <Stripe />
       <BookingSection />
       <Footer />
