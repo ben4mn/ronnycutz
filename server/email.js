@@ -125,3 +125,12 @@ export async function sendDenialEmail(booking, baseUrl) {
 
   await t.sendMail({ from: process.env.GMAIL_USER, to: booking.client_email, subject: 'RonnyCutz - Booking Update', html });
 }
+export async function sendReminderEmail({ to, subject, html }) {
+  if (!transporter) return;
+  await transporter.sendMail({
+    from: '"RonnyCutz" <' + (process.env.GMAIL_USER || 'rronnycutzz@gmail.com') + '>',
+    to,
+    subject,
+    html,
+  });
+}
