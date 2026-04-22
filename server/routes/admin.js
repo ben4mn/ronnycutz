@@ -73,4 +73,16 @@ router.delete('/blocks/:id', requireToken, (req, res) => {
   res.json({ success: true });
 });
 
+
+router.post('/send-reminder', requireAdmin, async (req, res) => {
+  const { to, name, subject, html } = req.body;
+  if (!to || !name || !subject || !html) return res.status(400).json({ error: 'Missing fields' });
+  try {
+    await sendReminderEmail({ to, name, subject, html });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;
