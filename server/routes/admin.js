@@ -1,6 +1,6 @@
 import express from 'express';
 import db from '../db.js';
-import { sendApprovalEmail, sendDenialEmail } from '../email.js';
+import { sendApprovalEmail, sendDenialEmail, sendReminderEmail } from '../email.js';
 
 const router = express.Router();
 
@@ -74,7 +74,7 @@ router.delete('/blocks/:id', requireToken, (req, res) => {
 });
 
 
-router.post('/send-reminder', requireAdmin, async (req, res) => {
+router.post('/send-reminder', requireToken, async (req, res) => {
   const { to, name, subject, html } = req.body;
   if (!to || !name || !subject || !html) return res.status(400).json({ error: 'Missing fields' });
   try {
