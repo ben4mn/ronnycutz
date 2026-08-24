@@ -35,8 +35,7 @@ export function buildSlots(dateYMD, durationMin, hours) {
   return slots;
 }
 
-export function getAvailability(dateYMD, durationMin, hours) {
-  const all = buildSlots(dateYMD, durationMin, hours);
+function filterAvailable(all, dateYMD, durationMin) {
   if (all.length === 0) return [];
   const dayStart = new Date(dateYMD + 'T00:00:00');
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
@@ -63,6 +62,18 @@ export function getAvailability(dateYMD, durationMin, hours) {
     }
     return true;
   });
+}
+
+export function getAvailability(dateYMD, durationMin, hours) {
+  return filterAvailable(buildSlots(dateYMD, durationMin, hours), dateYMD, durationMin);
+}
+
+export function getAfterHoursAvailability(dateYMD, durationMin, hours, afterHours) {
+  const ahSlots = buildSlots(dateYMD, durationMin, afterHours);
+  if (ahSlots.length === 0) return [];
+  const regular = new Set(buildSlots(dateYMD, durationMin, hours));
+  const unique = ahSlots.filter((s) => !regular.has(s));
+  return filterAvailable(unique, dateYMD, durationMin);
 }
 
 export { dateToLocalYMD };

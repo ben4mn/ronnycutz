@@ -5,9 +5,12 @@ import { sendBookingEmails } from '../email.js';
 import { buildSingleEvent } from '../ics.js';
 import services from '../../src/data/services.json' with { type: 'json' };
 import hours from '../../src/data/hours.json' with { type: 'json' };
-import { getAvailability } from '../availability.js';
+import afterHours from '../../src/data/afterHours.json' with { type: 'json' };
+import { getAvailability, getAfterHoursAvailability } from '../availability.js';
 
 const router = express.Router();
+
+const AFTER_HOURS_SURCHARGE = 30;
 
 const FAKE_DOMAINS = new Set([
   'mailinator.com','guerrillamail.com','tempmail.com','throwaway.email',
@@ -54,19 +57,24 @@ router.post('/', async (req, res) => {
   const normalizedIso = start.toISOString();
   const dateYMD = new Date(normalizedIso).toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
   const openSlots = getAvailability(dateYMD, service.duration_min, hours);
-  if (!openSlots.includes(normalizedIso)) {
+  const afterHoursSlots = getAfterHoursAvailability(dateYMD, service.duration_min, hours, afterHours);
+  const isAfterHours = afterHoursSlots.includes(normalizedIso);
+  if (!openSlots.includes(normalizedIso) && !isAfterHours) {
     return res.status(409).json({ error: 'Slot no longer available' });
   }
+
+  const bookingPrice = service.price + (isAfterHours ? AFTER_HOURS_SURCHARGE : 0);
+  const bookingName = isAfterHours ? service.name + ' — After-hours' : service.name;
 
   const cancel_token = crypto.randomBytes(16).toString('hex');
   try {
     const insert = db.prepare(
-      "INSERT INTO bookings (service_id, service_name, service_price, start_iso, duration_min, client_name, client_phone, client_email, notes, status, cancel_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)"
+      "INSERT INTO bookings (service_id, service_name, service_price, start_iso, duration_min, client_name, client_phone, client_email, notes, status, cancel_token, after_hours) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)"
     );
     const result = insert.run(
-      service.id, service.name, service.price, normalizedIso, service.duration_min,
+      service.id, bookingName, bookingPrice, normalizedIso, service.duration_min,
       client_name.trim(), client_phone.trim(), client_email.trim().toLowerCase(),
-      notes?.trim() || null, cancel_token
+      notes?.trim() || null, cancel_token, isAfterHours ? 1 : 0
     );
     const booking = db.prepare('SELECT * FROM bookings WHERE id = ?').get(result.lastInsertRowid);
     sendBookingEmails(booking, getBaseUrl(req)).catch((e) => console.error('[bookings] email failed:', e.message));

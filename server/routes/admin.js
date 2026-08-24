@@ -27,7 +27,7 @@ router.get('/config', requireToken, (req, res) => {
 
 router.get('/bookings', requireToken, (req, res) => {
   const rows = db.prepare(
-    `SELECT id, service_name, service_price, start_iso, duration_min, client_name, client_phone, client_email, notes, status, created_at
+    `SELECT id, service_name, service_price, start_iso, duration_min, client_name, client_phone, client_email, notes, status, after_hours, created_at
      FROM bookings WHERE start_iso >= datetime('now', '-7 days') ORDER BY start_iso ASC`
   ).all();
   res.json({ bookings: rows });

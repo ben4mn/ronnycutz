@@ -45,4 +45,10 @@ db.exec(`
   );
 `);
 
+try {
+  db.exec("ALTER TABLE bookings ADD COLUMN after_hours INTEGER NOT NULL DEFAULT 0");
+} catch {
+  /* column already exists */
+}
+
 export default db;
