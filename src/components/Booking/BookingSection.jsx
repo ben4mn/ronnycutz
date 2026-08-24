@@ -31,6 +31,7 @@ export default function BookingSection() {
   const [serviceId, setServiceId] = useState(services[0].id);
   const [selectedDate, setSelectedDate] = useState(ymd(new Date()));
   const [slots, setSlots] = useState([]);
+  const [afterHoursSlots, setAfterHoursSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [form, setForm] = useState({ name: '', phone: '', email: '', notes: '' });
@@ -46,11 +47,15 @@ export default function BookingSection() {
     setLoadingSlots(true);
     setSelectedSlot(null);
     fetchAvailability(selectedDate, serviceId)
-      .then((data) => { if (!cancel) setSlots(data.slots || []); })
-      .catch(() => { if (!cancel) setSlots([]); })
+      .then((data) => { if (!cancel) { setSlots(data.slots || []); setAfterHoursSlots(data.afterHoursSlots || []); } })
+      .catch(() => { if (!cancel) { setSlots([]); setAfterHoursSlots([]); } })
       .finally(() => !cancel && setLoadingSlots(false));
     return () => { cancel = true; };
   }, [selectedDate, serviceId]);
+
+  const AFTER_HOURS_SURCHARGE = 30;
+  const isAfterHoursSelected = selectedSlot != null && afterHoursSlots.includes(selectedSlot);
+  const totalPrice = service.price + (isAfterHoursSelected ? AFTER_HOURS_SURCHARGE : 0);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -155,9 +160,9 @@ export default function BookingSection() {
             <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#E03A2F', marginBottom: '12px' }}>3. Select a time</div>
             {loadingSlots ? (
               <p style={{ color: '#888', fontSize: '14px' }}>Loading-</p>
-            ) : slots.length === 0 ? (
+            ) : (slots.length === 0 && afterHoursSlots.length === 0) ? (
               <p style={{ color: '#888', fontSize: '14px', fontStyle: 'italic' }}>No availability on this day - try another.</p>
-            ) : (
+            ) : slots.length === 0 ? null : (
               <AnimatePresence mode="wait">
                 <motion.div
                   key={selectedDate}
@@ -183,6 +188,28 @@ export default function BookingSection() {
                   })}
                 </motion.div>
               </AnimatePresence>
+            )}
+
+            {!loadingSlots && afterHoursSlots.length > 0 && (
+              <div style={{ marginTop: '20px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 800, color: '#BA7517', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
+                  After hours - +$30 - subject to approval
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                  {afterHoursSlots.map((slot) => {
+                    const active = slot === selectedSlot;
+                    return (
+                      <button key={slot} type="button" onClick={() => setSelectedSlot(slot)}
+                        style={{ padding: '10px', border: active ? '2px solid #BA7517' : '2px solid #EF9F27', borderRadius: '8px', background: active ? '#FAC775' : '#FAEEDA', fontWeight: 700, fontSize: '13px', color: '#633806', cursor: 'pointer', boxShadow: active ? '2px 2px 0 #BA7517' : '2px 2px 0 #EF9F27' }}>
+                        {formatSlotTime(slot)}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p style={{ fontSize: '12px', color: '#8a6d3b', marginTop: '8px', fontStyle: 'italic' }}>
+                  Evening times outside normal hours. Adds a $30 surcharge, and Aaron will confirm if he can make it work.
+                </p>
+              </div>
             )}
           </div>
 
@@ -222,11 +249,19 @@ export default function BookingSection() {
             </label>
           </div>
 
+          {isAfterHoursSelected && (
+            <div style={{ background: '#FAEEDA', border: '2.5px solid #EF9F27', borderRadius: '12px', padding: '14px 18px', boxShadow: '3px 3px 0 #EF9F27' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#633806', marginBottom: '4px' }}><span>{service.name}</span><span>${service.price}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#633806', marginBottom: '6px' }}><span>After-hours surcharge</span><span>+$30</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 800, color: '#633806', borderTop: '1.5px solid #EF9F27', paddingTop: '6px' }}><span>Total (pay in shop)</span><span>${totalPrice}</span></div>
+            </div>
+          )}
+
           {error && <p style={{ color: '#E03A2F', fontSize: '14px', fontWeight: 700 }}>{error}</p>}
 
           <button type="submit" disabled={submitting || !selectedSlot}
             style={{ width: '100%', padding: '15px', background: submitting || !selectedSlot || !agreedToPolicy ? '#ccc' : '#E03A2F', color: '#fff', border: '2.5px solid #111', borderRadius: '50px', fontWeight: 800, fontSize: '16px', cursor: submitting || !selectedSlot || !agreedToPolicy ? 'not-allowed' : 'pointer', boxShadow: '4px 4px 0 #111' }}>
-            {submitting ? 'Sending...' : selectedSlot ? `Request - ${service.name} ${service.price}` : 'Choose a time to continue'}
+            {submitting ? 'Sending...' : selectedSlot ? `Request - ${service.name}${isAfterHoursSelected ? ' (After-hours)' : ''} $${totalPrice}` : 'Choose a time to continue'}
           </button>
 
         </form>

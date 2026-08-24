@@ -41,14 +41,16 @@ export async function sendBookingEmails(booking, baseUrl) {
       <div style="background:#fff;border-left:4px solid #E03A2F;padding:16px 20px;margin:20px 0;border-radius:4px;border:2px solid #111;">
         <p style="margin:4px 0;"><strong>Service:</strong> ${booking.service_name}</p>
         <p style="margin:4px 0;"><strong>When:</strong> ${when}</p>
-        <p style="margin:4px 0;"><strong>Price:</strong> $${booking.service_price}</p>
+        <p style="margin:4px 0;"><strong>Price:</strong> $${booking.service_price}${booking.after_hours ? ' <span style="color:#BA7517;">(includes $30 after-hours surcharge)</span>' : ''}</p>
       </div>
+      ${booking.after_hours ? '<div style="background:#FAEEDA;border:2px solid #EF9F27;border-radius:8px;padding:12px 16px;margin:0 0 16px;"><p style="margin:0;font-size:14px;color:#633806;">This is an <strong>after-hours request</strong>. Aaron will confirm if he can make this time work.</p></div>' : ''}
       <p style="color:#666;font-size:14px;">You'll get another email once it's confirmed. - RonnyCutz</p>
     </div>`;
 
   const ownerHtml = `
     <div style="${baseStyle()}">
       <h1 style="color:#E03A2F;margin:0 0 8px;font-size:28px;font-weight:900;">New Booking Request</h1>
+      ${booking.after_hours ? '<div style="background:#FAC775;border:2.5px solid #BA7517;border-radius:8px;padding:10px 16px;margin:0 0 16px;"><p style="margin:0;font-size:15px;font-weight:800;color:#633806;">AFTER-HOURS REQUEST · +$30 · $' + booking.service_price + ' total</p></div>' : ''}
       <div style="background:#fff;border:2px solid #111;padding:16px 20px;margin:20px 0;border-radius:8px;">
         <p style="margin:4px 0;font-size:16px;font-weight:800;">${booking.service_name} - ${when}</p>
         <p style="margin:8px 0 4px 0;"><strong>Name:</strong> ${booking.client_name}</p>
@@ -65,7 +67,8 @@ export async function sendBookingEmails(booking, baseUrl) {
     await t.sendMail({ from: process.env.GMAIL_USER, to: booking.client_email, subject: 'RonnyCutz - Booking Request Received', html: clientHtml });
     const notifyEmail = process.env.NOTIFY_EMAIL || 'aaron.moreno1024@gmail.com';
     if (notifyEmail) {
-      await t.sendMail({ from: process.env.GMAIL_USER, to: notifyEmail, subject: '[RonnyCutz] New booking - ' + booking.client_name + ' @ ' + when, html: ownerHtml });
+      const ownerSubject = (booking.after_hours ? '[AFTER-HOURS +$30] ' : '') + '[RonnyCutz] New booking - ' + booking.client_name + ' @ ' + when;
+      await t.sendMail({ from: process.env.GMAIL_USER, to: notifyEmail, subject: ownerSubject, html: ownerHtml });
     }
   } catch (err) { console.error('[email] send failed:', err.message); }
 }
