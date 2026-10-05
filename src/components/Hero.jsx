@@ -48,6 +48,15 @@ export default function Hero() {
            {shop.address}
         </motion.span>
 
+        <motion.span
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 800, color: '#fff', letterSpacing: '0.12em', textTransform: 'uppercase', border: '2px solid #111', padding: '6px 16px', borderRadius: '9999px', background: '#E03A2F', boxShadow: '2px 2px 0 #111' }}
+        >
+          <span aria-hidden="true">✓</span> Licensed Barber
+        </motion.span>
+
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
