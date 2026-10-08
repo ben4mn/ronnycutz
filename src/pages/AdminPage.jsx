@@ -3,6 +3,7 @@ import {
   adminFetchConfig, adminFetchBookings, adminApproveBooking,
   adminDenyBooking, adminCancelBooking, adminFetchBlocks,
   adminCreateBlock, adminDeleteBlock, adminFetchClients,
+  adminArchiveClient, adminUnarchiveClient,
 } from '../lib/api.js';
 
 const STORAGE_KEY = 'ronnycutz_admin_token';
@@ -163,9 +164,35 @@ function dueBadge(c) {
   return { text: 'Next ~' + c.dueInDays + 'd', bg: '#F1EFE8', fg: '#5F5E5A', bd: '#ccc' };
 }
 
-function ClientsView({ clients }) {
+function ClientsView({ clients, token, onChange }) {
   const [q, setQ] = useState('');
   const [onlyDue, setOnlyDue] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [archived, setArchived] = useState([]);
+  const [busyKey, setBusyKey] = useState(null);
+
+  async function openArchived() {
+    setShowArchived(true);
+    try { const d = await adminFetchClients(token, { archived: true }); setArchived(d.clients || []); }
+    catch { setArchived([]); }
+  }
+
+  async function handleArchive(c) {
+    if (!confirm(`Remove ${c.name || 'this client'} from your list? You can restore them later from "Archived".`)) return;
+    setBusyKey(c.key);
+    try { await adminArchiveClient(c.key, token); await onChange(); }
+    finally { setBusyKey(null); }
+  }
+
+  async function handleRestore(c) {
+    setBusyKey(c.key);
+    try {
+      await adminUnarchiveClient(c.key, token);
+      await onChange();
+      const d = await adminFetchClients(token, { archived: true });
+      setArchived(d.clients || []);
+    } finally { setBusyKey(null); }
+  }
 
   const dueNow = clients.filter(c => c.dueInDays != null && c.dueInDays <= 0).length;
   const dueSoon = clients.filter(c => c.dueInDays != null && c.dueInDays > 0 && c.dueInDays <= 7).length;
@@ -217,14 +244,45 @@ function ClientsView({ clients }) {
               {c.cadenceDays ? <span>~every {c.cadenceDays}d</span> : null}
               {c.totalSpent ? <span>${c.totalSpent} total</span> : null}
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               {c.phone && <a href={'sms:' + c.phone} style={{ flex: 1, textAlign: 'center', background: '#4A7FD4', color: '#fff', border: '2px solid #111', borderRadius: '50px', padding: '7px', fontWeight: 800, fontSize: '12px', textDecoration: 'none' }}>Text</a>}
               {c.phone && <a href={'tel:' + c.phone} style={{ flex: 1, textAlign: 'center', background: '#fff', color: '#111', border: '2px solid #111', borderRadius: '50px', padding: '7px', fontWeight: 800, fontSize: '12px', textDecoration: 'none' }}>Call</a>}
               {c.email && <a href={'mailto:' + c.email} style={{ flex: 1, textAlign: 'center', background: '#fff', color: '#111', border: '2px solid #111', borderRadius: '50px', padding: '7px', fontWeight: 800, fontSize: '12px', textDecoration: 'none' }}>Email</a>}
+              <button onClick={() => handleArchive(c)} disabled={busyKey === c.key} title="Remove from list"
+                style={{ background: '#fff', color: '#999', border: '2px solid #ccc', borderRadius: '50px', padding: '7px 12px', fontWeight: 800, fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                {busyKey === c.key ? '...' : 'Remove'}
+              </button>
             </div>
           </div>
         );
       })}
+
+      <div style={{ marginTop: '18px', borderTop: '1px dashed #ccc', paddingTop: '14px' }}>
+        {!showArchived ? (
+          <button onClick={openArchived} style={{ background: 'none', border: 'none', color: '#4A7FD4', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
+            Show archived clients →
+          </button>
+        ) : (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <span style={{ fontWeight: 800, fontSize: '14px', color: '#666' }}>Archived ({archived.length})</span>
+              <button onClick={() => setShowArchived(false)} style={{ background: 'none', border: 'none', color: '#4A7FD4', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>Hide</button>
+            </div>
+            {archived.length === 0 ? <p style={s.emptyText}>No archived clients.</p> : archived.map((c, i) => (
+              <div key={(c.key || '') + i} style={{ background: '#f5f5f5', border: '1.5px solid #ccc', borderRadius: '10px', padding: '12px 14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#555' }}>{c.name || '(no name)'}</div>
+                  <div style={{ fontSize: '12px', color: '#888' }}>{c.visits} cut{c.visits !== 1 ? 's' : ''} · last {c.lastVisitIso ? shortDate(c.lastVisitIso) : 'never'}</div>
+                </div>
+                <button onClick={() => handleRestore(c)} disabled={busyKey === c.key}
+                  style={{ background: '#4A7FD4', color: '#fff', border: '2px solid #111', borderRadius: '50px', padding: '7px 14px', fontWeight: 800, fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  {busyKey === c.key ? '...' : 'Restore'}
+                </button>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -391,7 +449,7 @@ function AdminDashboard({ token, onLogout }) {
           </div>
         )}
 
-        {activeTab === 'clients' && <ClientsView clients={clients} />}
+        {activeTab === 'clients' && <ClientsView clients={clients} token={token} onChange={reload} />}
 
         {activeTab === 'all' && (
           <div style={s.section}>
