@@ -65,8 +65,15 @@ router.get('/clients', requireToken, (req, res) => {
     }
   }
 
+  const archivedKeys = new Set(
+    db.prepare('SELECT client_key FROM archived_clients').all().map((r) => r.client_key)
+  );
+  const wantArchived = req.query.archived === '1';
+
   const clients = [];
-  for (const c of map.values()) {
+  for (const [key, c] of map.entries()) {
+    const isArchived = archivedKeys.has(key);
+    if (wantArchived ? !isArchived : isArchived) continue;
     c.visits.sort((a, b) => a.t - b.t);
     const n = c.visits.length;
     const last = n ? c.visits[n - 1] : null;
@@ -81,6 +88,7 @@ router.get('/clients', requireToken, (req, res) => {
     const nextUpcoming = c.upcoming.sort((a, b) => a.t - b.t)[0] || null;
     const dueInDays = (last && !nextUpcoming) ? (cadence - daysSince) : null;
     clients.push({
+      key,
       name: c.name, email: c.email, phone: c.phone,
       visits: n, totalSpent,
       lastVisitIso: last ? last.iso : null,
@@ -97,7 +105,21 @@ router.get('/clients', requireToken, (req, res) => {
     return av - bv;
   });
 
-  res.json({ clients, generatedAt: new Date().toISOString() });
+  res.json({ clients, archivedCount: archivedKeys.size, generatedAt: new Date().toISOString() });
+});
+
+router.post('/clients/archive', requireToken, (req, res) => {
+  const key = (req.body && req.body.key ? String(req.body.key) : '').toLowerCase().trim();
+  if (!key) return res.status(400).json({ error: 'key required' });
+  db.prepare('INSERT OR IGNORE INTO archived_clients (client_key) VALUES (?)').run(key);
+  res.json({ success: true });
+});
+
+router.post('/clients/unarchive', requireToken, (req, res) => {
+  const key = (req.body && req.body.key ? String(req.body.key) : '').toLowerCase().trim();
+  if (!key) return res.status(400).json({ error: 'key required' });
+  db.prepare('DELETE FROM archived_clients WHERE client_key = ?').run(key);
+  res.json({ success: true });
 });
 
 router.post('/bookings/:id/approve', requireToken, async (req, res) => {

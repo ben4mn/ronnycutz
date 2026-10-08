@@ -51,4 +51,11 @@ try {
   /* column already exists */
 }
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS archived_clients (
+    client_key TEXT PRIMARY KEY,
+    archived_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 export default db;

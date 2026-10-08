@@ -31,9 +31,20 @@ export async function adminFetchBookings(token, days) {
   return r.json();
 }
 
-export async function adminFetchClients(token) {
-  const r = await fetch(`${BASE}/admin/clients`, { headers: adminHeaders(token) });
+export async function adminFetchClients(token, { archived } = {}) {
+  const q = archived ? '?archived=1' : '';
+  const r = await fetch(`${BASE}/admin/clients${q}`, { headers: adminHeaders(token) });
   if (!r.ok) throw new Error('Unauthorized');
+  return r.json();
+}
+
+export async function adminArchiveClient(key, token) {
+  const r = await fetch(`${BASE}/admin/clients/archive`, { method: 'POST', headers: adminHeaders(token), body: JSON.stringify({ key }) });
+  return r.json();
+}
+
+export async function adminUnarchiveClient(key, token) {
+  const r = await fetch(`${BASE}/admin/clients/unarchive`, { method: 'POST', headers: adminHeaders(token), body: JSON.stringify({ key }) });
   return r.json();
 }
 
