@@ -24,8 +24,15 @@ export async function adminFetchConfig(token) {
   return r.json();
 }
 
-export async function adminFetchBookings(token) {
-  const r = await fetch(`${BASE}/admin/bookings`, { headers: adminHeaders(token) });
+export async function adminFetchBookings(token, days) {
+  const q = days ? `?days=${days}` : '';
+  const r = await fetch(`${BASE}/admin/bookings${q}`, { headers: adminHeaders(token) });
+  if (!r.ok) throw new Error('Unauthorized');
+  return r.json();
+}
+
+export async function adminFetchClients(token) {
+  const r = await fetch(`${BASE}/admin/clients`, { headers: adminHeaders(token) });
   if (!r.ok) throw new Error('Unauthorized');
   return r.json();
 }
