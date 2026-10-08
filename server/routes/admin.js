@@ -26,11 +26,78 @@ router.get('/config', requireToken, (req, res) => {
 });
 
 router.get('/bookings', requireToken, (req, res) => {
+  // Default to the last 7 days for day-to-day use; pass ?days=N for more history
+  // (the calendar and clients views request a full year).
+  const days = Math.min(Math.max(parseInt(req.query.days, 10) || 7, 1), 1000);
   const rows = db.prepare(
     `SELECT id, service_name, service_price, start_iso, duration_min, client_name, client_phone, client_email, notes, status, after_hours, created_at
-     FROM bookings WHERE start_iso >= datetime('now', '-7 days') ORDER BY start_iso ASC`
-  ).all();
+     FROM bookings WHERE start_iso >= datetime('now', '-' || ? || ' days') ORDER BY start_iso ASC`
+  ).all(String(days));
   res.json({ bookings: rows });
+});
+
+// Aggregated client "CRM" view: one row per client with visit history,
+// typical rebooking cadence, and how overdue they are for a cut.
+router.get('/clients', requireToken, (req, res) => {
+  const rows = db.prepare(
+    `SELECT client_email AS email, client_name AS name, client_phone AS phone,
+            service_name, service_price, start_iso, status
+     FROM bookings ORDER BY start_iso ASC`
+  ).all();
+
+  const now = Date.now();
+  const DAY = 24 * 60 * 60 * 1000;
+  const DEFAULT_CADENCE = 28;
+  const map = new Map();
+
+  for (const r of rows) {
+    const key = (r.email || r.phone || '').toLowerCase().trim();
+    if (!key) continue;
+    if (!map.has(key)) map.set(key, { name: r.name, email: r.email, phone: r.phone, visits: [], upcoming: [] });
+    const c = map.get(key);
+    if (r.name) c.name = r.name;
+    if (r.phone) c.phone = r.phone;
+    if (r.email) c.email = r.email;
+    const t = new Date(r.start_iso).getTime();
+    if (r.status === 'confirmed') {
+      if (t <= now) c.visits.push({ iso: r.start_iso, t, price: r.service_price || 0 });
+      else c.upcoming.push({ iso: r.start_iso, t });
+    }
+  }
+
+  const clients = [];
+  for (const c of map.values()) {
+    c.visits.sort((a, b) => a.t - b.t);
+    const n = c.visits.length;
+    const last = n ? c.visits[n - 1] : null;
+    const totalSpent = c.visits.reduce((s, v) => s + v.price, 0);
+    let cadence = DEFAULT_CADENCE;
+    if (n >= 2) {
+      let sum = 0;
+      for (let i = 1; i < n; i++) sum += (c.visits[i].t - c.visits[i - 1].t) / DAY;
+      cadence = Math.max(5, Math.round(sum / (n - 1)));
+    }
+    const daysSince = last ? Math.floor((now - last.t) / DAY) : null;
+    const nextUpcoming = c.upcoming.sort((a, b) => a.t - b.t)[0] || null;
+    const dueInDays = (last && !nextUpcoming) ? (cadence - daysSince) : null;
+    clients.push({
+      name: c.name, email: c.email, phone: c.phone,
+      visits: n, totalSpent,
+      lastVisitIso: last ? last.iso : null,
+      daysSinceLast: daysSince,
+      cadenceDays: n >= 1 ? cadence : null,
+      nextApptIso: nextUpcoming ? nextUpcoming.iso : null,
+      dueInDays,
+    });
+  }
+
+  clients.sort((a, b) => {
+    const av = a.dueInDays == null ? Infinity : a.dueInDays;
+    const bv = b.dueInDays == null ? Infinity : b.dueInDays;
+    return av - bv;
+  });
+
+  res.json({ clients, generatedAt: new Date().toISOString() });
 });
 
 router.post('/bookings/:id/approve', requireToken, async (req, res) => {

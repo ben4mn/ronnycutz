@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   adminFetchConfig, adminFetchBookings, adminApproveBooking,
   adminDenyBooking, adminCancelBooking, adminFetchBlocks,
-  adminCreateBlock, adminDeleteBlock,
+  adminCreateBlock, adminDeleteBlock, adminFetchClients,
 } from '../lib/api.js';
 
 const STORAGE_KEY = 'ronnycutz_admin_token';
@@ -150,6 +150,85 @@ function WeekCalendar({ bookings }) {
   );
 }
 
+function shortDate(iso) {
+  if (!iso) return '-';
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' });
+}
+
+function dueBadge(c) {
+  if (c.nextApptIso) return { text: 'Booked ' + shortDate(c.nextApptIso), bg: '#EEF4FF', fg: '#1C4E9C', bd: '#4A7FD4' };
+  if (c.dueInDays == null) return null;
+  if (c.dueInDays <= 0) return { text: 'Overdue ' + Math.abs(c.dueInDays) + 'd', bg: '#FCE9E8', fg: '#A32D2D', bd: '#E03A2F' };
+  if (c.dueInDays <= 7) return { text: 'Due soon (' + c.dueInDays + 'd)', bg: '#FAEEDA', fg: '#854F0B', bd: '#EF9F27' };
+  return { text: 'Next ~' + c.dueInDays + 'd', bg: '#F1EFE8', fg: '#5F5E5A', bd: '#ccc' };
+}
+
+function ClientsView({ clients }) {
+  const [q, setQ] = useState('');
+  const [onlyDue, setOnlyDue] = useState(false);
+
+  const dueNow = clients.filter(c => c.dueInDays != null && c.dueInDays <= 0).length;
+  const dueSoon = clients.filter(c => c.dueInDays != null && c.dueInDays > 0 && c.dueInDays <= 7).length;
+
+  const term = q.trim().toLowerCase();
+  let list = clients.filter(c => {
+    if (onlyDue && !(c.dueInDays != null && c.dueInDays <= 0)) return false;
+    if (!term) return true;
+    return (c.name || '').toLowerCase().includes(term) ||
+      (c.email || '').toLowerCase().includes(term) ||
+      (c.phone || '').toLowerCase().includes(term);
+  });
+
+  const metric = (label, value, color) => (
+    <div style={{ flex: 1, background: '#fff', border: '2px solid #111', borderRadius: '12px', padding: '12px', textAlign: 'center', boxShadow: '2px 2px 0 #111' }}>
+      <div style={{ fontSize: '24px', fontWeight: 900, color }}>{value}</div>
+      <div style={{ fontSize: '11px', color: '#666', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+    </div>
+  );
+
+  return (
+    <div style={s.section}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+        {metric('Clients', clients.length, '#111')}
+        {metric('Due now', dueNow, '#E03A2F')}
+        {metric('Due soon', dueSoon, '#BA7517')}
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', alignItems: 'center' }}>
+        <input placeholder="Search name, phone, email" value={q} onChange={e => setQ(e.target.value)}
+          style={{ flex: 1, padding: '10px 12px', border: '2px solid #111', borderRadius: '8px', fontSize: '14px', fontFamily: 'inherit', outline: 'none' }} />
+        <button onClick={() => setOnlyDue(v => !v)}
+          style={{ whiteSpace: 'nowrap', padding: '10px 14px', border: '2px solid #111', borderRadius: '8px', fontWeight: 800, fontSize: '13px', cursor: 'pointer', background: onlyDue ? '#E03A2F' : '#fff', color: onlyDue ? '#fff' : '#111' }}>
+          {onlyDue ? 'Due only ✓' : 'Due only'}
+        </button>
+      </div>
+
+      {list.length === 0 ? <p style={s.emptyText}>No clients match.</p> : list.map((c, i) => {
+        const badge = dueBadge(c);
+        return (
+          <div key={(c.email || c.phone || '') + i} style={{ background: '#fff', border: '2px solid #111', borderRadius: '12px', padding: '14px', marginBottom: '10px', boxShadow: '2px 2px 0 #111' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
+              <div style={{ fontSize: '16px', fontWeight: 800 }}>{c.name || '(no name)'}</div>
+              {badge && <span style={{ background: badge.bg, color: badge.fg, border: '1.5px solid ' + badge.bd, fontWeight: 800, fontSize: '11px', padding: '2px 8px', borderRadius: '50px', whiteSpace: 'nowrap' }}>{badge.text}</span>}
+            </div>
+            <div style={{ fontSize: '13px', color: '#333', marginBottom: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px 14px' }}>
+              <span><strong>{c.visits}</strong> cut{c.visits !== 1 ? 's' : ''}</span>
+              <span>Last: {c.lastVisitIso ? shortDate(c.lastVisitIso) + (c.daysSinceLast != null ? ' (' + c.daysSinceLast + 'd ago)' : '') : 'never'}</span>
+              {c.cadenceDays ? <span>~every {c.cadenceDays}d</span> : null}
+              {c.totalSpent ? <span>${c.totalSpent} total</span> : null}
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {c.phone && <a href={'sms:' + c.phone} style={{ flex: 1, textAlign: 'center', background: '#4A7FD4', color: '#fff', border: '2px solid #111', borderRadius: '50px', padding: '7px', fontWeight: 800, fontSize: '12px', textDecoration: 'none' }}>Text</a>}
+              {c.phone && <a href={'tel:' + c.phone} style={{ flex: 1, textAlign: 'center', background: '#fff', color: '#111', border: '2px solid #111', borderRadius: '50px', padding: '7px', fontWeight: 800, fontSize: '12px', textDecoration: 'none' }}>Call</a>}
+              {c.email && <a href={'mailto:' + c.email} style={{ flex: 1, textAlign: 'center', background: '#fff', color: '#111', border: '2px solid #111', borderRadius: '50px', padding: '7px', fontWeight: 800, fontSize: '12px', textDecoration: 'none' }}>Email</a>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const [token, setToken] = useState(() => { try { return localStorage.getItem(STORAGE_KEY) || ''; } catch { return ''; } });
   const [authed, setAuthed] = useState(false);
@@ -207,6 +286,7 @@ export default function AdminPage() {
 function AdminDashboard({ token, onLogout }) {
   const [bookings, setBookings] = useState([]);
   const [blocks, setBlocks] = useState([]);
+  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [blockForm, setBlockForm] = useState({ start: '', end: '', reason: '' });
@@ -215,8 +295,12 @@ function AdminDashboard({ token, onLogout }) {
 
   async function reload() {
     try {
-      const [b1, b2] = await Promise.all([adminFetchBookings(token), adminFetchBlocks(token)]);
-      setBookings(b1.bookings || []); setBlocks(b2.blocks || []); setError(null);
+      const [b1, b2, b3] = await Promise.all([
+        adminFetchBookings(token, 365),
+        adminFetchBlocks(token),
+        adminFetchClients(token),
+      ]);
+      setBookings(b1.bookings || []); setBlocks(b2.blocks || []); setClients(b3.clients || []); setError(null);
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   }
@@ -264,6 +348,7 @@ function AdminDashboard({ token, onLogout }) {
         <button style={tabStyle('requests')} onClick={() => setActiveTab('requests')}>
           Requests {pending.length > 0 ? '(' + pending.length + ')' : ''}
         </button>
+        <button style={tabStyle('clients')} onClick={() => setActiveTab('clients')}>Clients</button>
         <button style={tabStyle('all')} onClick={() => setActiveTab('all')}>All Bookings</button>
         <button style={tabStyle('settings')} onClick={() => setActiveTab('settings')}>Settings</button>
       </div>
@@ -305,6 +390,8 @@ function AdminDashboard({ token, onLogout }) {
             ))}
           </div>
         )}
+
+        {activeTab === 'clients' && <ClientsView clients={clients} />}
 
         {activeTab === 'all' && (
           <div style={s.section}>
