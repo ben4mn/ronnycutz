@@ -10,6 +10,14 @@ function Stripe() {
   return <div className="stripe-divider" />;
 }
 
+function NewPricesBanner() {
+  return (
+    <div style={{ background: '#4A7FD4', color: '#fff', textAlign: 'center', padding: '8px 16px', borderBottom: '3px solid #111', fontSize: '13px', fontWeight: 800, letterSpacing: '0.02em' }}>
+      New prices are now in effect - check out our updated services.
+    </div>
+  );
+}
+
 function Nav() {
   return (
     <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#fff', borderBottom: '3px solid #111', position: 'sticky', top: 0, zIndex: 50 }}>
@@ -40,6 +48,7 @@ export default function LandingPage() {
         }
       `}</style>
       <Nav />
+      <NewPricesBanner />
       <Hero />
       <Stripe />
       <Services />
