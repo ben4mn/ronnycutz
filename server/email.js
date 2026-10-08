@@ -137,3 +137,32 @@ export async function sendReminderEmail({ to, subject, html }) {
     html,
   });
 }
+
+export const PRICING_ANNOUNCEMENT_SUBJECT = 'New pricing at RonnyCutz - book your next cut';
+
+export async function sendPricingAnnouncement({ to, firstName, baseUrl }) {
+  const t = getTransporter();
+  if (!t) throw new Error('email not configured');
+  const bookUrl = (baseUrl || 'https://ronnycutz.com') + '/#book';
+  const hi = firstName ? 'Hey ' + firstName + ',' : 'Hey,';
+  const html = `
+    <div style="${baseStyle()}">
+      <h1 style="color:#4A7FD4;margin:0 0 16px;font-size:28px;font-weight:900;">RonnyCutz -</h1>
+      <p style="font-size:16px;">${hi}</p>
+      <p style="font-size:16px;">Quick update - I'm now a <strong>licensed barber</strong>, and I've refreshed my pricing:</p>
+      <div style="background:#fff;border:2px solid #111;padding:16px 20px;margin:20px 0;border-radius:8px;">
+        <p style="margin:6px 0;font-size:15px;"><strong>Haircut</strong> - $35</p>
+        <p style="margin:6px 0;font-size:15px;"><strong>Haircut &amp; Beard</strong> - $40</p>
+        <p style="margin:6px 0;font-size:15px;"><strong>Haircut &amp; Design</strong> - $40</p>
+        <p style="margin:6px 0;font-size:15px;"><strong>Haircut, Beard &amp; Design</strong> - $45</p>
+      </div>
+      <p style="font-size:16px;">Ready for a fresh cut? Book online anytime:</p>
+      <a href="${bookUrl}" style="display:inline-block;background:#E03A2F;color:#fff;padding:13px 30px;border-radius:50px;font-weight:800;font-size:16px;text-decoration:none;border:2.5px solid #111;box-shadow:3px 3px 0 #111;margin:8px 0 20px;">
+        Book an Appointment
+      </a>
+      <p style="font-size:15px;margin:0;">See you in the chair,<br><strong>Ronny</strong></p>
+      <p style="color:#666;font-size:12px;margin-top:24px;">RonnyCutz . 6522 84th St, Lubbock, TX</p>
+      <p style="color:#999;font-size:11px;margin-top:8px;">Don't want these updates? Just reply "STOP" and I'll take you off the list.</p>
+    </div>`;
+  await t.sendMail({ from: process.env.GMAIL_USER, to, subject: PRICING_ANNOUNCEMENT_SUBJECT, html });
+}

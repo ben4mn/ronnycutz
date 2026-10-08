@@ -1,6 +1,6 @@
 import express from 'express';
 import db from '../db.js';
-import { sendApprovalEmail, sendDenialEmail, sendReminderEmail } from '../email.js';
+import { sendApprovalEmail, sendDenialEmail, sendReminderEmail, sendPricingAnnouncement } from '../email.js';
 
 const router = express.Router();
 
@@ -83,6 +83,38 @@ router.post('/send-reminder', requireToken, async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// Broadcast the pricing announcement to all past clients.
+// Defaults to a dry run; only sends when the body has { confirm: true }.
+router.post('/broadcast', requireToken, async (req, res) => {
+  const confirm = req.body && req.body.confirm === true;
+  const rows = db.prepare(
+    'SELECT client_email AS email, MIN(client_name) AS name FROM bookings GROUP BY client_email'
+  ).all();
+  const recipients = rows.filter(
+    (r) => r.email && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(r.email)
+  );
+
+  if (!confirm) {
+    return res.json({ dryRun: true, recipientCount: recipients.length });
+  }
+
+  const baseUrl = getBaseUrl(req);
+  let sent = 0;
+  const failures = [];
+  for (const r of recipients) {
+    const firstName = (r.name || '').trim().split(/\s+/)[0] || '';
+    try {
+      await sendPricingAnnouncement({ to: r.email, firstName, baseUrl });
+      sent += 1;
+    } catch (e) {
+      failures.push({ email: r.email, error: e.message });
+      console.error('[broadcast] failed for', r.email, e.message);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 350));
+  }
+  res.json({ dryRun: false, total: recipients.length, sent, failed: failures.length, failures });
 });
 
 export default router;
