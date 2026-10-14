@@ -53,7 +53,7 @@ export default function BookingSection() {
     return () => { cancel = true; };
   }, [selectedDate, serviceId]);
 
-  const AFTER_HOURS_SURCHARGE = 30;
+  const AFTER_HOURS_SURCHARGE = 25;
   const isAfterHoursSelected = selectedSlot != null && afterHoursSlots.includes(selectedSlot);
   const totalPrice = service.price + (isAfterHoursSelected ? AFTER_HOURS_SURCHARGE : 0);
 
@@ -193,7 +193,7 @@ export default function BookingSection() {
             {!loadingSlots && afterHoursSlots.length > 0 && (
               <div style={{ marginTop: '20px' }}>
                 <div style={{ fontSize: '12px', fontWeight: 800, color: '#BA7517', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
-                  After hours - +$30 - subject to approval
+                  After hours - +$25 - subject to approval
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
                   {afterHoursSlots.map((slot) => {
@@ -207,7 +207,7 @@ export default function BookingSection() {
                   })}
                 </div>
                 <p style={{ fontSize: '12px', color: '#8a6d3b', marginTop: '8px', fontStyle: 'italic' }}>
-                  Evening times outside normal hours. Adds a $30 surcharge, and Aaron will confirm if he can make it work.
+                  Evening times outside normal hours. Adds a $25 surcharge, and Aaron will confirm if he can make it work.
                 </p>
               </div>
             )}
@@ -252,7 +252,7 @@ export default function BookingSection() {
           {isAfterHoursSelected && (
             <div style={{ background: '#FAEEDA', border: '2.5px solid #EF9F27', borderRadius: '12px', padding: '14px 18px', boxShadow: '3px 3px 0 #EF9F27' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#633806', marginBottom: '4px' }}><span>{service.name}</span><span>${service.price}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#633806', marginBottom: '6px' }}><span>After-hours surcharge</span><span>+$30</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#633806', marginBottom: '6px' }}><span>After-hours surcharge</span><span>+$25</span></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 800, color: '#633806', borderTop: '1.5px solid #EF9F27', paddingTop: '6px' }}><span>Total (pay in shop)</span><span>${totalPrice}</span></div>
             </div>
           )}

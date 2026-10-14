@@ -435,7 +435,7 @@ function AdminDashboard({ token, onLogout }) {
               <div key={b.id} style={s.pendingCard}>
                 <div style={s.cardName}>
                   {b.client_name}
-                  {b.after_hours ? <span style={{ marginLeft: '8px', background: '#FAEEDA', color: '#633806', border: '1.5px solid #EF9F27', fontWeight: 800, fontSize: '11px', padding: '2px 8px', borderRadius: '50px' }}>After-hours +$30</span> : null}
+                  {b.after_hours ? <span style={{ marginLeft: '8px', background: '#FAEEDA', color: '#633806', border: '1.5px solid #EF9F27', fontWeight: 800, fontSize: '11px', padding: '2px 8px', borderRadius: '50px' }}>After-hours +$25</span> : null}
                 </div>
                 <div style={s.cardSub}>{b.service_name} - {fmt(b.start_iso)} - ${b.service_price}</div>
                 <div style={s.cardPhone}>{b.client_phone} - {b.client_email}</div>
