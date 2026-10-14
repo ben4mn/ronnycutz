@@ -10,7 +10,7 @@ import { getAvailability, getAfterHoursAvailability } from '../availability.js';
 
 const router = express.Router();
 
-const AFTER_HOURS_SURCHARGE = 30;
+const AFTER_HOURS_SURCHARGE = 25;
 
 const FAKE_DOMAINS = new Set([
   'mailinator.com','guerrillamail.com','tempmail.com','throwaway.email',
